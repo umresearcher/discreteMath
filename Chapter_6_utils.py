@@ -280,6 +280,71 @@ def transitive_counterexample(relation):
 
     return None
 
+def transitive_witness(relation):
+
+    R = set(relation)
+
+    # ------------------------------------------
+    # Best case:
+    # a != b and b != d
+    # Example:
+    # (1,2), (2,3) => (1,3)
+    # ------------------------------------------
+
+    for a, b in R:
+        for c, d in R:
+
+            if (
+                b == c
+                and (a, d) in R
+                and a != b
+                and b != d
+            ):
+                return (
+                    (a, b),
+                    (c, d),
+                    (a, d)
+                )
+
+    # ------------------------------------------
+    # Next best:
+    # at least one inequality
+    # ------------------------------------------
+
+    for a, b in R:
+        for c, d in R:
+
+            if (
+                b == c
+                and (a, d) in R
+                and (a != b or b != d)
+            ):
+                return (
+                    (a, b),
+                    (c, d),
+                    (a, d)
+                )
+
+    # ------------------------------------------
+    # Final fallback:
+    # any witness
+    # ------------------------------------------
+
+    for a, b in R:
+        for c, d in R:
+
+            if (
+                b == c
+                and (a, d) in R
+            ):
+                return (
+                    (a, b),
+                    (c, d),
+                    (a, d)
+                )
+
+    return None
+
 def adjacency_matrix_dataframe(nodes, relation):
 
     R = set(relation)

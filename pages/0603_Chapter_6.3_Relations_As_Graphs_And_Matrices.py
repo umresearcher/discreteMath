@@ -431,3 +431,1297 @@ if (st.session_state.validated_AB is not None
             matrix_df,
             use_container_width=True
         )
+
+# --------------------------------------------------
+# Step 5: Explore Relation Properties
+# --------------------------------------------------
+
+if (
+    st.session_state.relation_instance is not None
+    and
+    st.session_state.validated_AB is not None
+):
+
+    st.subheader("Step 5: Explore Relation Properties")
+
+    st.markdown("""
+    A relation can be analyzed using several important properties.
+    """)
+
+    with st.expander(
+        "Review: Relation Properties",
+        expanded=False
+    ):
+        st.markdown("""
+    - Reflexive
+    - Anti-reflexive
+    - Symmetric
+    - Antisymmetric
+    - Transitive
+    """)
+    
+    st.markdown("""
+    Select a property to explore in detail.
+    """)
+
+    props = relation_properties(
+        AB,
+        relation_instance
+    )
+
+    st.markdown("### Properties of the Current Relation")
+    st.markdown(
+        f"**Reflexive:** "
+        f"{'✅' if props['Reflexive'] else '❌'}"
+    )
+    st.markdown(
+        f"**Anti-reflexive:** "
+        f"{'✅' if props['AntiReflexive'] else '❌'}"
+    )
+    st.markdown(
+        f"**Symmetric:** "
+        f"{'✅' if props['Symmetric'] else '❌'}"
+    )
+    st.markdown(
+        f"**Anti-symmetric:** "
+        f"{'✅' if props['Antisymmetric'] else '❌'}"
+    )
+    st.markdown(
+        f"**Transitive:** "
+        f"{'✅' if props['Transitive'] else '❌'}"
+    )
+
+    selected_property = st.radio(
+        "Select a property to explore in detail",
+        [
+            "Reflexive",
+            "Anti-reflexive",
+            "Symmetric",
+            "Antisymmetric",
+            "Transitive"
+        ]
+    )
+
+    if selected_property == "Reflexive":
+        st.markdown("""
+        ### Reflexive
+
+        A relation is reflexive if:
+
+        For every element `a ∈ A`, the pair `(a,a)`
+        belongs to the relation.
+
+        #### Graph Interpretation
+
+        Every node has a self-loop.
+
+        #### Matrix Interpretation
+
+        Every diagonal entry is `1`.
+        """)
+
+        if props["Reflexive"]:
+            st.success(
+                "✅ The relation is reflexive."
+            )
+        else:
+            st.error(
+                "❌ The relation is not reflexive."
+            )
+
+        counterexample = reflexive_counterexample(
+            AB,
+            relation_instance
+        )
+
+        if counterexample is not None:
+            st.markdown(
+                f"""
+**Counterexample**
+
+The pair **({counterexample}, {counterexample})**
+does not belong to the relation.
+"""
+            )
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown(
+                    "#### Graph Representation"
+                )
+                g = graphviz.Digraph(format="png")
+                g.attr(rankdir="LR")
+                # Add all nodes
+                for n in AB:
+                    if n == counterexample:
+                        g.node(
+                            str(n),
+                            color="red",
+                            penwidth="3"
+                        )
+                    else:
+                        g.node(str(n))
+                # Invisible edges for layout
+                for i in range(len(AB) - 1):
+                    g.edge(
+                        str(AB[i]),
+                        str(AB[i + 1]),
+                        style="invis"
+                    )
+                # Relation edges
+                for u, v in relation_instance:
+                    g.edge(str(u), str(v))
+                st.graphviz_chart(
+                    g,
+                    use_container_width=True
+                )
+                st.caption(
+                    f"Node {counterexample} is highlighted "
+                    "because it is missing a self-loop."
+                )
+            with col2:
+                st.markdown(
+                    "#### Matrix Representation"
+                )
+                matrix_df = adjacency_matrix_dataframe(
+                    AB,
+                    relation_instance
+                )
+                def highlight_diagonal(cell):
+                    return (
+                        "background-color: #ffdddd;"
+                    )
+                styled_matrix = (
+                    matrix_df.style
+                    .apply(
+                        lambda row: [
+                            (
+                                "background-color: #ffdddd;"
+                                if (
+                                    row.name == counterexample
+                                    and col == counterexample
+                                )
+                                else ""
+                            )
+                            for col in matrix_df.columns
+                        ],
+                        axis=1
+                    )
+                )
+                st.dataframe(
+                    styled_matrix,
+                    use_container_width=True
+                )
+                st.caption(
+                    f"M[{counterexample},{counterexample}] = 0, "
+                    "so the relation is not reflexive."
+                )
+        else:
+            st.info(
+                "Every element a in A satisfies "
+                "(a,a) ∈ R."
+            )
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown(
+                    "#### Graph Representation"
+                )
+                g = graphviz.Digraph(format="png")
+                g.attr(rankdir="LR")
+
+                for n in AB:
+                    g.node(str(n))
+
+                for i in range(len(AB) - 1):
+                    g.edge(
+                        str(AB[i]),
+                        str(AB[i + 1]),
+                        style="invis"
+                    )
+
+                for u, v in relation_instance:
+
+                    if u == v:
+                        g.edge(
+                            str(u),
+                            str(v),
+                            color="green",
+                            penwidth="3"
+                        )
+                    else:
+                        g.edge(
+                            str(u),
+                            str(v)
+                        )
+
+                st.graphviz_chart(
+                    g,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    "All self-loops are present."
+                )
+            with col2:
+                st.markdown(
+                    "#### Matrix Representation"
+                )
+
+                matrix_df = adjacency_matrix_dataframe(
+                    AB,
+                    relation_instance
+                )
+
+                styled_matrix = (
+                    matrix_df.style
+                    .apply(
+                        lambda row: [
+                            (
+                                "background-color: #ddffdd;"
+                                if row.name == col
+                                else ""
+                            )
+                            for col in matrix_df.columns
+                        ],
+                        axis=1
+                    )
+                )
+
+                st.dataframe(
+                    styled_matrix,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    "All diagonal entries are 1."
+                )
+
+    if selected_property == "Anti-reflexive":
+
+        st.markdown("""
+        ### Anti-reflexive
+
+        A relation is anti-reflexive if:
+
+        For every element `a ∈ A`, the pair `(a,a)`
+        does not belong to the relation.
+
+        #### Graph Interpretation
+
+        No node has a self-loop.
+
+        #### Matrix Interpretation
+
+        Every diagonal entry is `0`.
+        """)
+
+        if props["AntiReflexive"]:
+            st.success(
+                "✅ The relation is anti-reflexive."
+            )
+        else:
+            st.error(
+                "❌ The relation is not anti-reflexive."
+            )
+
+        counterexample = anti_reflexive_counterexample(
+            AB,
+            relation_instance
+        )
+        if counterexample is not None:
+
+            st.markdown(
+                f"""
+    **Counterexample**
+
+    The pair **({counterexample}, {counterexample})**
+    belongs to the relation.
+    """
+            )
+
+            col1, col2 = st.columns(2)
+            with col1:
+
+                st.markdown(
+                    "#### Graph Representation"
+                )
+
+                g = graphviz.Digraph(format="png")
+
+                g.attr(rankdir="LR")
+
+                for n in AB:
+
+                    if n == counterexample:
+
+                        g.node(
+                            str(n),
+                            color="red",
+                            penwidth="3"
+                        )
+
+                    else:
+
+                        g.node(str(n))
+
+                for i in range(len(AB) - 1):
+                    g.edge(
+                        str(AB[i]),
+                        str(AB[i + 1]),
+                        style="invis"
+                    )
+
+                for u, v in relation_instance:
+
+                    if (
+                        u == counterexample
+                        and
+                        v == counterexample
+                    ):
+
+                        g.edge(
+                            str(u),
+                            str(v),
+                            color="red",
+                            penwidth="3"
+                        )
+
+                    else:
+
+                        g.edge(
+                            str(u),
+                            str(v)
+                        )
+
+                st.graphviz_chart(
+                    g,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    f"Node {counterexample} has a self-loop."
+                )
+
+            with col2:
+
+                st.markdown(
+                    "#### Matrix Representation"
+                )
+
+                matrix_df = adjacency_matrix_dataframe(
+                    AB,
+                    relation_instance
+                )
+
+                styled_matrix = (
+                    matrix_df.style
+                    .apply(
+                        lambda row: [
+                            (
+                                "background-color: #ffdddd;"
+                                if (
+                                    row.name == counterexample
+                                    and col == counterexample
+                                )
+                                else ""
+                            )
+                            for col in matrix_df.columns
+                        ],
+                        axis=1
+                    )
+                )
+
+                st.dataframe(
+                    styled_matrix,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    f"M[{counterexample},{counterexample}] = 1."
+                )
+        else:
+
+            st.info(
+                "✅ No element is related to itself."
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+
+                st.markdown(
+                    "#### Graph Representation"
+                )
+
+                g = graphviz.Digraph(format="png")
+
+                g.attr(rankdir="LR")
+
+                for n in AB:
+
+                    g.node(
+                        str(n),
+                        color="green",
+                        penwidth="3"
+                    )
+
+                for i in range(len(AB) - 1):
+                    g.edge(
+                        str(AB[i]),
+                        str(AB[i + 1]),
+                        style="invis"
+                    )
+
+                for u, v in relation_instance:
+
+                    g.edge(
+                        str(u),
+                        str(v)
+                    )
+
+                st.graphviz_chart(
+                    g,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    "No node has a self-loop."
+                )
+
+            with col2:
+
+                st.markdown(
+                    "#### Matrix Representation"
+                )
+
+                matrix_df = adjacency_matrix_dataframe(
+                    AB,
+                    relation_instance
+                )
+
+                styled_matrix = (
+                    matrix_df.style
+                    .apply(
+                        lambda row: [
+                            (
+                                "background-color: #ddffdd;"
+                                if row.name == col
+                                else ""
+                            )
+                            for col in matrix_df.columns
+                        ],
+                        axis=1
+                    )
+                )
+
+                st.dataframe(
+                    styled_matrix,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    "All diagonal entries are 0."
+                )
+
+    if selected_property == "Symmetric":
+        st.markdown("""
+        ### Symmetric
+
+        A relation is symmetric if:
+
+        Whenever `(a,b)` belongs to the relation,
+        `(b,a)` also belongs to the relation.
+
+        #### Graph Interpretation
+
+        Every arrow from a to b is matched by
+        an arrow from b to a.
+
+        #### Matrix Interpretation
+
+        Whenever M[a,b] = 1,
+        M[b,a] must also equal 1.
+        """)
+
+        if props["Symmetric"]:
+            st.success(
+                "✅ The relation is symmetric."
+            )
+        else:
+            st.error(
+                "❌ The relation is not symmetric."
+            )
+
+        counterexample = symmetric_counterexample(
+            relation_instance
+        )
+
+        if counterexample is not None:
+            a, b = counterexample
+            st.markdown(
+                f"""
+        **Counterexample**
+
+        The pair **({a}, {b})** belongs to the relation,
+        but **({b}, {a})** does not.
+        """
+            )
+            col1, col2 = st.columns(2)
+
+            with col1:
+
+                st.markdown(
+                    "#### Graph Representation"
+                )
+
+                g = graphviz.Digraph(format="png")
+
+                g.attr(rankdir="LR")
+
+                # Add all nodes
+                for n in AB:
+                    g.node(str(n))
+
+                # Invisible edges for layout
+                for i in range(len(AB) - 1):
+                    g.edge(
+                        str(AB[i]),
+                        str(AB[i + 1]),
+                        style="invis"
+                    )
+
+                # Relation edges
+                for u, v in relation_instance:
+
+                    if (u, v) == (a, b):
+                        g.edge(
+                            str(u),
+                            str(v),
+                            color="red",
+                            penwidth="3"
+                        )
+                    else:
+                        g.edge(
+                            str(u),
+                            str(v)
+                        )
+
+                # Missing reverse edge
+                g.edge(
+                    str(b),
+                    str(a),
+                    color="red",
+                    style="dashed"
+                )
+
+                st.graphviz_chart(
+                    g,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    f"({a}, {b}) is present, but "
+                    f"({b}, {a}) is missing."
+                )
+
+            with col2:
+
+                st.markdown(
+                    "#### Matrix Representation"
+                )
+
+                matrix_df = adjacency_matrix_dataframe(
+                    AB,
+                    relation_instance
+                )
+
+                styled_matrix = (
+                    matrix_df.style
+                    .apply(
+                        lambda row: [
+                            (
+                                "background-color: #ffdddd;"
+                                if (
+                                    (row.name == a and col == b)
+                                    or
+                                    (row.name == b and col == a)
+                                )
+                                else ""
+                            )
+                            for col in matrix_df.columns
+                        ],
+                        axis=1
+                    )
+                )
+
+                st.dataframe(
+                    styled_matrix,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    f"M[{a},{b}] = 1 but "
+                    f"M[{b},{a}] = 0."
+                )
+
+        else:
+
+            st.info(
+                "Whenever (a,b) belongs to the relation, "
+                "(b,a) also belongs to the relation."
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+
+                st.markdown(
+                    "#### Graph Representation"
+                )
+
+                g = graphviz.Digraph(format="png")
+
+                g.attr(rankdir="LR")
+
+                # Add all nodes
+                for n in AB:
+                    g.node(str(n))
+
+                # Invisible edges for layout
+                for i in range(len(AB) - 1):
+                    g.edge(
+                        str(AB[i]),
+                        str(AB[i + 1]),
+                        style="invis"
+                    )
+
+                R = set(relation_instance)
+
+                for u, v in relation_instance:
+
+                    if (v, u) in R:
+                        g.edge(
+                            str(u),
+                            str(v),
+                            color="green",
+                            penwidth="3"
+                        )
+                    else:
+                        g.edge(
+                            str(u),
+                            str(v)
+                        )
+
+                st.graphviz_chart(
+                    g,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    "Every edge has a corresponding "
+                    "edge in the opposite direction."
+                )
+
+            with col2:
+
+                st.markdown(
+                    "#### Matrix Representation"
+                )
+
+                matrix_df = adjacency_matrix_dataframe(
+                    AB,
+                    relation_instance
+                )
+
+                R = set(relation_instance)
+
+                styled_matrix = (
+                    matrix_df.style
+                    .apply(
+                        lambda row: [
+                            (
+                                "background-color: #ddffdd;"
+                                if (
+                                    (row.name, col) in R
+                                    and
+                                    (col, row.name) in R
+                                )
+                                else ""
+                            )
+                            for col in matrix_df.columns
+                        ],
+                        axis=1
+                    )
+                )
+
+                st.dataframe(
+                    styled_matrix,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    "Whenever M[a,b] = 1, "
+                    "M[b,a] is also 1."
+                )
+
+    if selected_property == "Antisymmetric":
+        st.markdown("""
+        ### Antisymmetric
+
+        A relation is antisymmetric if:
+
+        For every pair `(a,b)` that belongs to the relation,
+        where `a ≠ b`,
+
+        `(b,a)` must not belong to the relation.
+
+        #### Graph Interpretation
+
+        Distinct nodes must not have arrows in both directions.
+
+        #### Matrix Interpretation
+
+        For distinct elements `a` and `b`,
+        `M[a,b]` and `M[b,a]` cannot both be `1`.
+        """)
+
+        if props["Antisymmetric"]:
+            st.success(
+                "✅ The relation is antisymmetric."
+            )
+        else:
+            st.error(
+                "❌ The relation is not antisymmetric."
+            )
+
+        counterexample = antisymmetric_counterexample(
+            relation_instance
+        )
+
+        if counterexample is not None:
+            a, b = counterexample
+            st.markdown(
+                f"""
+    **Counterexample**
+
+    Both **({a}, {b})** and **({b}, {a})**
+    belong to the relation, even though
+    **{a} ≠ {b}**.
+    """
+            )
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.markdown(
+                    "#### Graph Representation"
+                )
+                g = graphviz.Digraph(format="png")
+                g.attr(rankdir="LR")
+                for n in AB:
+                    g.node(str(n))
+
+                for i in range(len(AB) - 1):
+                    g.edge(
+                        str(AB[i]),
+                        str(AB[i + 1]),
+                        style="invis"
+                    )
+                for u, v in relation_instance:
+                    if (
+                        (u, v) == (a, b)
+                        or
+                        (u, v) == (b, a)
+                    ):
+                        g.edge(
+                            str(u),
+                            str(v),
+                            color="red",
+                            penwidth="3"
+                        )
+                    else:
+                        g.edge(
+                            str(u),
+                            str(v)
+                        )
+                st.graphviz_chart(
+                    g,
+                    use_container_width=True
+                )
+                st.caption(
+                    f"Both ({a}, {b}) and ({b}, {a}) "
+                    "are present."
+                )
+
+            with col2:
+
+                st.markdown(
+                    "#### Matrix Representation"
+                )
+
+                matrix_df = adjacency_matrix_dataframe(
+                    AB,
+                    relation_instance
+                )
+
+                styled_matrix = (
+                    matrix_df.style
+                    .apply(
+                        lambda row: [
+                            (
+                                "background-color: #ffdddd;"
+                                if (
+                                    (
+                                        row.name == a
+                                        and col == b
+                                    )
+                                    or
+                                    (
+                                        row.name == b
+                                        and col == a
+                                    )
+                                )
+                                else ""
+                            )
+                            for col in matrix_df.columns
+                        ],
+                        axis=1
+                    )
+                )
+
+                st.dataframe(
+                    styled_matrix,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    f"M[{a},{b}] = 1 and "
+                    f"M[{b},{a}] = 1."
+                )
+
+        else:
+
+            st.info(
+                "No distinct pair of elements has arrows "
+                "in both directions."
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+
+                st.markdown(
+                    "#### Graph Representation"
+                )
+
+                g = graphviz.Digraph(format="png")
+
+                g.attr(rankdir="LR")
+
+                for n in AB:
+                    g.node(str(n))
+
+                # Invisible edges for layout
+                for i in range(len(AB) - 1):
+                    g.edge(
+                        str(AB[i]),
+                        str(AB[i + 1]),
+                        style="invis"
+                    )
+
+                for u, v in relation_instance:
+
+                    if u != v:
+
+                        g.edge(
+                            str(u),
+                            str(v),
+                            color="green",
+                            penwidth="3"
+                        )
+
+                    else:
+
+                        g.edge(
+                            str(u),
+                            str(v)
+                        )
+
+                st.graphviz_chart(
+                    g,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    "No distinct pair of nodes has arrows "
+                    "in both directions."
+                )
+
+            with col2:
+
+                st.markdown(
+                    "#### Matrix Representation"
+                )
+
+                matrix_df = adjacency_matrix_dataframe(
+                    AB,
+                    relation_instance
+                )
+
+                styled_matrix = (
+                    matrix_df.style
+                    .apply(
+                        lambda row: [
+                            (
+                                "background-color: #ddffdd;"
+                                if (
+                                    row.name != col
+                                    and
+                                    matrix_df.loc[
+                                        row.name,
+                                        col
+                                    ] == 1
+                                )
+                                else ""
+                            )
+                            for col in matrix_df.columns
+                        ],
+                        axis=1
+                    )
+                )
+
+                st.dataframe(
+                    styled_matrix,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    "No distinct elements a and b have "
+                    "both M[a,b] = 1 and M[b,a] = 1."
+                )
+
+    if selected_property == "Transitive":
+
+        st.markdown("""
+        ### Transitive
+
+        A relation is transitive if:
+
+        Whenever `(a,b)` and `(b,c)` belong to the relation,
+
+        `(a,c)` must also belong to the relation.
+
+        #### Graph Interpretation
+
+        Whenever there is a path
+
+        `a → b → c`
+
+        there must also be a direct arrow
+
+        `a → c`.
+
+        #### Matrix Interpretation
+
+        If
+
+        `M[a,b] = 1` and `M[b,c] = 1`,
+
+        then
+
+        `M[a,c]` must also equal `1`.
+        """)
+
+        if props["Transitive"]:
+            st.success(
+                "✅ The relation is transitive."
+            )
+        else:
+            st.error(
+                "❌ The relation is not transitive."
+            )
+
+        counterexample = transitive_counterexample(
+            relation_instance
+        )
+
+        if counterexample is not None:
+
+            pair1, pair2, missing_pair = (
+                counterexample
+            )
+
+            st.markdown(
+                f"""
+            **Counterexample**
+
+            The pairs **{pair1}** and **{pair2}**
+            belong to the relation.
+
+            However, **{missing_pair}**
+            does not belong to the relation.
+            """
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+
+                st.markdown(
+                    "#### Graph Representation"
+                )
+
+                g = graphviz.Digraph(format="png")
+
+                g.attr(rankdir="LR")
+
+                # Add all nodes
+                for n in AB:
+                    g.node(str(n))
+
+                # Invisible edges for layout
+                for i in range(len(AB) - 1):
+                    g.edge(
+                        str(AB[i]),
+                        str(AB[i + 1]),
+                        style="invis"
+                    )
+
+                # Draw all relation edges normally
+                for u, v in relation_instance:
+
+                    g.edge(
+                        str(u),
+                        str(v)
+                    )
+
+                # Highlight the two edges involved
+                # in the transitivity violation
+                g.edge(
+                    str(pair1[0]),
+                    str(pair1[1]),
+                    color="red",
+                    penwidth="3"
+                )
+
+                g.edge(
+                    str(pair2[0]),
+                    str(pair2[1]),
+                    color="red",
+                    penwidth="3"
+                )
+
+                # Show the missing edge
+                g.edge(
+                    str(missing_pair[0]),
+                    str(missing_pair[1]),
+                    color="red",
+                    style="dashed",
+                    penwidth="3"
+                )
+
+                st.graphviz_chart(
+                    g,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    f"{pair1} and {pair2} are present, "
+                    f"but {missing_pair} is missing."
+                )
+
+            with col2:
+
+                st.markdown(
+                    "#### Matrix Representation"
+                )
+
+                matrix_df = adjacency_matrix_dataframe(
+                    AB,
+                    relation_instance
+                )
+
+                styled_matrix = (
+                    matrix_df.style
+                    .apply(
+                        lambda row: [
+                            (
+                                "background-color: #ffdddd;"
+                                if (
+                                    (
+                                        row.name == pair1[0]
+                                        and col == pair1[1]
+                                    )
+                                    or
+                                    (
+                                        row.name == pair2[0]
+                                        and col == pair2[1]
+                                    )
+                                    or
+                                    (
+                                        row.name == missing_pair[0]
+                                        and col == missing_pair[1]
+                                    )
+                                )
+                                else ""
+                            )
+                            for col in matrix_df.columns
+                        ],
+                        axis=1
+                    )
+                )
+
+                st.dataframe(
+                    styled_matrix,
+                    use_container_width=True
+                )
+
+                st.caption(
+                    f"M[{pair1[0]},{pair1[1]}] = 1 and "
+                    f"M[{pair2[0]},{pair2[1]}] = 1, "
+                    f"but M[{missing_pair[0]},{missing_pair[1]}] = 0."
+                )
+
+        else:
+
+            witness = transitive_witness(
+                relation_instance
+            )
+
+            if witness is not None:
+
+                pair1, pair2, implied_pair = witness
+
+                st.markdown(
+                    f"""
+                **Illustrative Example**
+
+                The pairs **{pair1}** and **{pair2}**
+                belong to the relation.
+
+                Since **{implied_pair}** also belongs
+                to the relation, this example satisfies
+                transitivity.
+
+                This example is shown for illustration
+                purposes only.
+
+                Determining whether a relation is
+                transitive requires checking **every**
+                pair `(a,b)` in `R` and `(b,c)` in `R`.
+                """
+                )
+
+                col1, col2 = st.columns(2)
+
+                with col1:
+
+                    st.markdown(
+                        "#### Graph Representation of the Example"
+                    )
+
+                    g = graphviz.Digraph(format="png")
+
+                    g.attr(rankdir="LR")
+
+                    for n in AB:
+                        g.node(str(n))
+
+                    for i in range(len(AB) - 1):
+                        g.edge(
+                            str(AB[i]),
+                            str(AB[i + 1]),
+                            style="invis"
+                        )
+
+                    highlight_edges = {
+                        pair1,
+                        pair2,
+                        implied_pair
+                    }
+
+                    for u, v in relation_instance:
+                        if (u, v) in highlight_edges:
+                            g.edge(
+                                str(u),
+                                str(v),
+                                color="green",
+                                penwidth="3"
+                            )
+                        else:
+                            g.edge(
+                                str(u),
+                                str(v)
+                            )
+
+                    st.graphviz_chart(
+                        g,
+                        use_container_width=True
+                    )
+
+                    st.caption(
+                        f"{pair1} and {pair2} imply "
+                        f"{implied_pair}, which is present."
+                    )
+
+                with col2:
+
+                    st.markdown(
+                        "#### Matrix Representation of the Example"
+                    )
+
+                    matrix_df = adjacency_matrix_dataframe(
+                        AB,
+                        relation_instance
+                    )
+
+                    styled_matrix = (
+                        matrix_df.style
+                        .apply(
+                            lambda row: [
+                                (
+                                    "background-color: #ddffdd;"
+                                    if (
+                                        (
+                                            row.name == pair1[0]
+                                            and col == pair1[1]
+                                        )
+                                        or
+                                        (
+                                            row.name == pair2[0]
+                                            and col == pair2[1]
+                                        )
+                                        or
+                                        (
+                                            row.name == implied_pair[0]
+                                            and col == implied_pair[1]
+                                        )
+                                    )
+                                    else ""
+                                )
+                                for col in matrix_df.columns
+                            ],
+                            axis=1
+                        )
+                    )
+
+                    st.dataframe(
+                        styled_matrix,
+                        use_container_width=True
+                    )
+
+                    st.caption(
+                        f"M[{pair1[0]},{pair1[1]}] = 1, "
+                        f"M[{pair2[0]},{pair2[1]}] = 1, "
+                        f"and M[{implied_pair[0]},{implied_pair[1]}] = 1."
+                    )
+
+            else:
+
+                st.markdown("""
+                **No Example Available**
+
+                The relation is transitive, but it does not
+                contain a nontrivial example that can be used
+                to illustrate the property.
+                """)
+
+
