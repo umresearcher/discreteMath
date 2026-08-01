@@ -54,6 +54,7 @@ def clear_set_a():
     st.session_state.set_a = ""
     st.session_state.validated_A = None
     st.session_state.validated_relation_code = None
+    st.session_state.relation_function = None
     st.session_state.relation_instance = None
     st.session_state.last_predefined_relation = None
 
@@ -225,7 +226,10 @@ The function must return:
 
 - `True` if `(a, b)` belongs to the relation.
 - `False` if `(a, b)` does not belong to the relation.
+""")
 
+    with st.expander("Allowed Python features"): 
+        st.markdown("""
 If you define your own relation, you may use:
 
 - Variables

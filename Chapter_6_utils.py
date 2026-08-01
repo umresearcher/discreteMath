@@ -279,3 +279,27 @@ def transitive_counterexample(relation):
                 )
 
     return None
+
+def adjacency_matrix_dataframe(nodes, relation):
+
+    R = set(relation)
+
+    matrix = []
+
+    for a in nodes:
+
+        row = []
+
+        for b in nodes:
+
+            row.append(
+                1 if (a, b) in R else 0
+            )
+
+        matrix.append(row)
+
+    return pd.DataFrame(
+        matrix,
+        index=nodes,
+        columns=nodes
+    )

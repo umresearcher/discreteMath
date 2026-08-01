@@ -89,6 +89,7 @@ if validate_a:
         st.session_state.validated_B = A
         # Clear everything downstream
         st.session_state.validated_relation_code = None
+        st.session_state.relation_function = None
         st.session_state.relation_instance = None       
         st.success(
             f"Set is valid ({len(A)} elements)"
@@ -146,7 +147,10 @@ else:
     - Symmetry
     - Antisymmetry
     - Transitivity
+    """)
 
+    with st.expander("Allowed Python features"): 
+        st.markdown("""
     If you define your own relation, you may use:
 
     - Variables
