@@ -454,7 +454,7 @@ if (st.session_state.validated_AB is not None
         )
 
         st.dataframe(
-            matrix_df,
+            matrix_df.astype(str),
             use_container_width=True
         )
 
@@ -712,13 +712,13 @@ if (st.session_state.validated_AB is not None
 
     st.markdown("""
     - **R¹** consists of all pairs in the original relation R.
-    - **R²** consists of all pairs connected by a path of length 2.
-    - **R³** consists of all pairs connected by a path of length 3.
-    - More generally, **Rᵏ** consists of all pairs connected by a path of length k.
+    - **R²** consists of all pairs reachable by a path of length 2.
+    - **R³** consists of all pairs reachable by a path of length 3.
+    - More generally, **Rᵏ** consists of all pairs reachable by a path of length k.
     """)
 
     power_k = st.slider(
-        "Select k for Rᵏ",
+        "Choose a value for k",
         min_value=1,
         max_value=min(len(AB), 5),
         value=2,
@@ -760,70 +760,982 @@ if (st.session_state.validated_AB is not None
             f"In this case, R{superscript(power_k)} is the empty relation."
         )
 
-    st.markdown(
-        f"### Directed Graph of R{superscript(power_k)}"
-    )
+    col1, col2 = st.columns(2)
 
-    st.caption(
-        f"There is an edge from a to b whenever "
-        f"(a,b) belongs to R{superscript(power_k)}."
-    )
-
-    g = graphviz.Digraph(format="png")
-    g.attr(rankdir="LR")
-
-    g.attr(
-        "node",
-        shape="circle",
-        fontsize="12"
-    )
-
-    for n in AB:
-        g.node(str(n))
-
-    # Encourage a compact layout
-    for i in range(
-        len(AB) - 1
-    ):
-        g.edge(
-            str(AB[i]),
-            str(AB[i + 1]),
-            style="invis"
+    with col1:
+        st.markdown(
+            f"### Directed Graph of R{superscript(power_k)}"
         )
 
-    for u, v in power_relation:
-        g.edge(
-            str(u),
-            str(v)
+        st.caption(
+            f"""
+        Light gray edges belong only to R.
+
+        Black edges belong only to R{superscript(power_k)}.
+
+        Green edges belong to both R and R{superscript(power_k)}.
+        """
         )
 
-    st.graphviz_chart(
-        g,
-        use_container_width=True
-    )
+        g = graphviz.Digraph(format="png")
 
-    st.markdown(
-        f"### Adjacency Matrix of R{superscript(power_k)}"
-    )
+        g.attr(rankdir="LR")
 
-    st.caption(
-        f"""
-    Rows correspond to a and columns correspond to b.
+        g.attr(
+            nodesep="0.3"
+        )
 
-    M[a,b] = 1 iff (a,b) belongs to R{superscript(power_k)}.
-    """
-    )
+        g.attr(
+            ranksep="0.4"
+        )
 
-    matrix_df = (
-        adjacency_matrix_dataframe(
+        g.attr(
+            "node",
+            shape="circle",
+            fontsize="12"
+        )
+
+        for n in AB:
+            g.node(str(n))
+
+        # Encourage a compact layout
+        for i in range(len(AB) - 1):
+            g.edge(
+                str(AB[i]),
+                str(AB[i + 1]),
+                style="invis"
+            )
+
+        r_set = set(relation_instance)
+
+        rk_set = set(power_relation)
+
+        all_edges = r_set | rk_set
+
+        for u, v in sorted(all_edges):
+
+            in_r = (u, v) in r_set
+            in_rk = (u, v) in rk_set
+
+            if in_r and in_rk:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="darkgreen",
+                    penwidth="3"
+                )
+
+            elif in_r:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="lightgray"
+                )
+
+            else:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="black",
+                    penwidth="3"
+                )
+
+        st.graphviz_chart(
+            g,
+            use_container_width=True
+        )    
+
+    with col2:
+        st.markdown(
+            f"### Adjacency Matrix of R{superscript(power_k)}"
+        )
+
+        matrix_df = adjacency_matrix_dataframe(
             AB,
             power_relation
+        )
+
+        st.dataframe(
+            matrix_df.astype(str),
+            use_container_width=True
+        )
+
+#highlighting a row and a column in matrix
+def highlight_row_and_column(df, row_value, col_value):
+
+    styles = pd.DataFrame(
+        "",
+        index=df.index,
+        columns=df.columns
+    )
+
+    # Highlight row
+    styles.loc[row_value, :] = (
+        "background-color: #fff3cd;"
+    )
+
+    # Highlight column
+    styles.loc[:, col_value] = (
+        "background-color: #d1ecf1;"
+    )
+
+    # Highlight intersection more strongly
+    styles.loc[row_value, col_value] = (
+        "background-color: #90ee90;"
+        "font-weight: bold;"
+    )
+
+    return styles
+
+if (st.session_state.validated_AB is not None
+    and st.session_state.validated_relation_code is not None
+    and st.session_state.relation_instance is not None):
+
+    st.subheader(
+        "Step 5: Matrix Powers and Reachability"
+    )
+
+    st.markdown("""
+In Step 4, we saw that **Rᵏ** contains all pairs
+that are reachable by a path of length **k**.
+
+We also represented these relations using
+**adjacency matrices**.
+
+An important question is:
+
+> How can we compute the adjacency matrix of R²,
+> R³, and Rᵏ directly from the adjacency matrix of R?
+
+To answer this question, we use **Boolean matrix multiplication**.
+""")
+
+    st.markdown("""
+Recall that an adjacency matrix contains only 0s and 1s.
+
+For Boolean matrices:
+
+- **AND** plays the role of multiplication.
+- **OR** plays the role of addition.
+""")
+
+    st.info("""
+Boolean Matrix Multiplication
+
+Multiplication (×)  →  AND
+
+Addition (+)        →  OR
+""")
+
+    st.markdown("""
+To determine whether **(a,b)** belongs to **R²**,
+we look for an intermediate vertex **x** such that:
+
+- (a,x) belongs to R, and
+- (x,b) belongs to R.
+
+In graph terms:
+
+a → x → b
+
+In logical terms:
+
+there exists an x such that
+
+(a,x) ∈ R and (x,b) ∈ R.
+
+Boolean matrix multiplication checks all possible intermediate vertices x.
+""")
+
+    st.markdown("""
+This leads to the Boolean matrix multiplication rule:
+
+(A²)[a,b]
+
+=
+(A[a,1] AND A[1,b])
+OR
+(A[a,2] AND A[2,b])
+OR
+⋯
+
+If at least one intermediate vertex works,
+then (A²)[a,b] = 1.
+Otherwise, (A²)[a,b] = 0.
+""")
+
+    st.info("""
+    Interpretation
+
+    AND asks:
+    Can we go from a to x and then from x to b?
+
+    OR asks:
+    Is there at least one intermediate vertex x
+    that makes the path possible?
+    """)
+
+    st.markdown(
+        "### Explore a Single Entry of A²"
+    )
+
+    st.markdown("""
+    Choose a row vertex **a** and a column vertex **b**.
+
+    We will determine whether **(A²)[a,b]** is 0 or 1
+    using Boolean matrix multiplication.
+    """)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        a = st.selectbox(
+            "Row Vertex (a)",
+            AB,
+            key="a_squared_row"
+        )
+
+    with col2:
+        b = st.selectbox(
+            "Column Vertex (b)",
+            AB,
+            key="a_squared_col"
+        )
+
+    st.markdown(
+        "#### Adjacency Matrix A"
+    )
+
+    matrix_df = adjacency_matrix_dataframe(
+        AB,
+        relation_instance
+    )
+
+    styled_df = (
+        matrix_df.astype(str)
+        .style
+        .apply(
+            lambda _: highlight_row_and_column(
+                matrix_df,
+                a,
+                b
+            ),
+            axis=None
         )
     )
 
     st.dataframe(
-        matrix_df,
+        styled_df,
         use_container_width=True
     )
+
+    rows = []
+
+    relation_set = set(relation_instance)
+
+    or_values = []
+
+    working_x = []
+
+    for x in AB:
+
+        ax = 1 if (a, x) in relation_set else 0
+
+        xb = 1 if (x, b) in relation_set else 0
+
+        and_value = ax and xb
+
+        if and_value:
+            working_x.append(x)
+
+        or_values.append(and_value)
+
+        rows.append(
+            {
+                "x": x,
+                f"A[{a},x]": ax,
+                f"A[x,{b}]": xb,
+                f"A[{a},x] AND A[x,{b}]": int(and_value)
+            }
+        )
+
+    boolean_df = pd.DataFrame(rows)
+
+    st.markdown(
+        f"#### Computing (A²)[{a},{b}]"
+    )
+
+    st.dataframe(
+        boolean_df.astype(str),
+        use_container_width=True
+    )
+
+    or_expression = " OR ".join(
+        str(v)
+        for v in or_values
+    )
+
+    result = int(any(or_values))
+
+    st.markdown(
+        "#### Combine Using OR"
+    )
+
+    st.code(
+        f"{or_expression} = {result}"
+    )
+
+    if working_x:
+        st.markdown(
+            "**Paths of length 2 that work:**"
+        )
+
+        for x in working_x:
+            st.markdown(
+                f"- {a} → {x} → {b}"
+            )
+
+    if result == 1:
+        st.success(
+            f"(A²)[{a},{b}] = 1"
+        )
+
+        st.markdown(
+            f"""
+    There exists an intermediate vertex **x**
+    such that
+
+    - ({a},x) belongs to R, and
+    - (x,{b}) belongs to R.
+
+    Therefore, ({a},{b}) belongs to **R²**.
+    """
+        )
+
+    else:
+        st.info(
+            f"(A²)[{a},{b}] = 0"
+        )
+
+        st.markdown(
+            f"""
+    There is no intermediate vertex **x**
+    such that
+
+    - ({a},x) belongs to R, and
+    - (x,{b}) belongs to R.
+
+    Therefore, ({a},{b}) does not belong to **R²**.
+    """
+        )
+
+    st.markdown(
+        "### Constructing the Entire Matrix A²"
+    )
+
+    st.markdown("""
+    Every entry of A² is computed in exactly
+    the same way as the example above.
+
+    Applying Boolean matrix multiplication
+    to every entry produces the entire matrix A².
+    """)
+
+    r2_relation, _ = relation_power_with_paths(
+    AB,
+    relation_instance,
+    2
+)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown(
+            "#### Directed Graph of R²"
+        )
+
+        st.caption(
+            """
+    Light gray edges belong only to R.
+
+    Black edges belong only to R².
+
+    Green edges belong to both R and R².
+    """
+        )
+
+        g = graphviz.Digraph(
+            format="png"
+        )
+
+        g.attr(
+            rankdir="LR"
+        )
+
+        g.attr(
+            nodesep="0.3"
+        )
+
+        g.attr(
+            ranksep="0.4"
+        )
+
+        g.attr(
+            "node",
+            shape="circle",
+            fontsize="12"
+        )
+
+        for n in AB:
+            g.node(str(n))
+
+        # Encourage a compact layout
+        for i in range(len(AB) - 1):
+            g.edge(
+                str(AB[i]),
+                str(AB[i + 1]),
+                style="invis"
+            )
+
+        r_set = set(relation_instance)
+
+        r2_set = set(r2_relation)
+
+        all_edges = r_set | r2_set
+
+        for u, v in all_edges:
+
+            in_r = (u, v) in r_set
+
+            in_r2 = (u, v) in r2_set
+
+            if in_r and in_r2:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="darkgreen",
+                    penwidth="3"
+                )
+
+            elif in_r:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="lightgray"
+                )
+
+            else:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="black",
+                    penwidth="3"
+                )
+
+        st.graphviz_chart(
+            g,
+            use_container_width=True
+        )
+
+    with col2:
+
+        st.markdown(
+            "#### Matrix A²"
+        )
+
+        r2_df = adjacency_matrix_dataframe(
+            AB,
+            r2_relation
+        )
+
+        st.dataframe(
+            r2_df.astype(str),
+            use_container_width=True
+        )
+
+    st.success(
+        "The matrix A² is identical to the adjacency matrix of R²."
+    )
+
+    st.info("""
+    More generally:
+
+    A² is the adjacency matrix of R²
+
+    A³ is the adjacency matrix of R³
+
+    ...
+
+    Aᵏ is the adjacency matrix of Rᵏ
+    """)
+
+if (st.session_state.validated_AB is not None
+    and st.session_state.validated_relation_code is not None
+    and st.session_state.relation_instance is not None):
+
+    st.subheader(
+        "Step 6: Higher Matrix Powers"
+    )
+
+    st.markdown("""
+    We have seen that A² is the adjacency matrix of R².
+
+    More generally:
+
+    - A³ is the adjacency matrix of R³.
+    - A⁴ is the adjacency matrix of R⁴.
+    - ...
+    - Aᵏ is the adjacency matrix of Rᵏ.
+
+    Select a value of k and compare the graph and
+    matrix representations.
+    """)
+
+    k_matrix = st.slider(
+        "Select k",
+        min_value=1,
+        max_value=max(2, len(AB) - 1),
+        value=min(2, max(2, len(AB) - 1)),
+        key="matrix_power_k"
+    )
+
+    st.caption(
+        "Try different values of k and observe how the graph and matrix change."
+    )
+
+    rk_relation, _ = relation_power_with_paths(
+        AB,
+        relation_instance,
+        k_matrix
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.markdown(
+            f"### Directed Graph of R{superscript(k_matrix)}"
+        )
+
+        st.caption(
+            f"""
+    Light gray edges belong only to R.
+
+    Black edges belong only to R{superscript(k_matrix)}.
+
+    Green edges belong to both R and R{superscript(k_matrix)}.
+    """
+        )
+
+        g = graphviz.Digraph(
+            format="png"
+        )
+
+        g.attr(rankdir="LR")
+
+        g.attr(
+            nodesep="0.3"
+        )
+
+        g.attr(
+            ranksep="0.4"
+        )
+
+        g.attr(
+            "node",
+            shape="circle",
+            fontsize="12"
+        )
+
+        for n in AB:
+            g.node(str(n))
+
+        # Encourage a compact layout
+        for i in range(len(AB) - 1):
+            g.edge(
+                str(AB[i]),
+                str(AB[i + 1]),
+                style="invis"
+            )
+
+        r_set = set(relation_instance)
+        rk_set = set(rk_relation)
+
+        all_edges = r_set | rk_set
+
+        for u, v in sorted(all_edges):
+
+            in_r = (u, v) in r_set
+            in_rk = (u, v) in rk_set
+
+            if in_r and in_rk:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="darkgreen",
+                    penwidth="3"
+                )
+
+            elif in_r:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="lightgray"
+                )
+
+            else:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="black",
+                    penwidth="3"
+                )
+
+        st.graphviz_chart(
+            g,
+            use_container_width=True
+        )
+
+    with col2:
+
+        st.markdown(
+            f"### Matrix A{superscript(k_matrix)}"
+        )
+
+        matrix_df = adjacency_matrix_dataframe(
+            AB,
+            rk_relation
+        )
+
+        st.dataframe(
+            matrix_df.astype(str),
+            use_container_width=True
+        )
+
+    st.success(
+        f"A{superscript(k_matrix)} is the adjacency matrix "
+        f"of R{superscript(k_matrix)}."
+    )
+
+if (st.session_state.validated_AB is not None
+    and st.session_state.validated_relation_code is not None
+    and st.session_state.relation_instance is not None):
+
+    st.subheader(
+        "Step 7: Transitive Closure"
+    )
+
+    st.markdown("""
+    In the previous steps, we explored reachability
+    using paths of a specific length.
+
+    - R¹ captures paths of length 1.
+    - R² captures paths of length 2.
+    - R³ captures paths of length 3.
+    - ...
+
+    What if we want to know whether one vertex can
+    reach another using a path of any positive length?
+
+    To answer this question, we use the transitive closure.
+    """)
+
+    st.info("""
+The transitive closure of R contains all pairs
+(a,b) such that b is reachable from a by a path
+of positive length.
+
+The transitive closure is denoted by R⁺.
+""")
+
+    max_power = max(1, len(AB) - 1)
+
+    transitive_closure = set()
+
+    for k in range(1, max_power + 1):
+
+        rk_relation, _ = relation_power_with_paths(
+            AB,
+            relation_instance,
+            k
+        )
+
+        transitive_closure.update(
+            rk_relation
+        )
+
+    st.markdown(
+        "### Constructing the Transitive Closure"
+    )
+
+    st.markdown(
+        f"""
+For a set with {len(AB)} vertices, we combine:
+
+R¹ ∪ R² ∪ ... ∪ R{superscript(max_power)}
+
+to obtain the transitive closure R⁺.
+"""
+    )
+
+    with st.expander(
+        "Why do we stop at R" + superscript(max_power) + "?"
+    ):
+        st.markdown(
+            f"""
+    A path that never repeats a vertex can contain
+    at most **{len(AB) - 1} edges**.
+
+    For a set with **{len(AB)} vertices**, any path
+    with more than **{len(AB) - 1} edges** must
+    repeat at least one vertex.    
+
+    Repeating vertices cannot create any new reachable
+    pairs that were not already discovered by shorter paths.
+
+    Therefore, when constructing the transitive closure,
+    it is sufficient to combine:
+
+    R¹ ∪ R² ∪ ... ∪ R{superscript(max_power)}
+
+    rather than considering arbitrarily long paths.
+    """
+        )
+
+    pairs_text = (
+        "{"
+        + ", ".join(
+            f"({a},{b})"
+            for a, b in sorted(
+                transitive_closure
+            )
+        )
+        + "}"
+    )
+
+    st.markdown(
+        "### Relation R⁺"
+    )
+
+    st.code(
+        pairs_text
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.markdown(
+            "### Directed Graph of R⁺"
+        )
+
+        st.caption(
+            """
+    Light gray edges belong only to R.
+
+    Black edges belong only to R⁺.
+
+    Green edges belong to both R and R⁺.
+    """
+        )
+
+        g = graphviz.Digraph(
+            format="png"
+        )
+
+        g.attr(rankdir="LR")
+
+        g.attr(
+            nodesep="0.3"
+        )
+
+        g.attr(
+            ranksep="0.4"
+        )
+
+        g.attr(
+            "node",
+            shape="circle",
+            fontsize="12"
+        )
+
+        for n in AB:
+            g.node(str(n))
+
+        # Encourage a compact layout
+        for i in range(len(AB) - 1):
+            g.edge(
+                str(AB[i]),
+                str(AB[i + 1]),
+                style="invis"
+            )
+
+        r_set = set(relation_instance)
+
+        r_plus_set = set(transitive_closure)
+
+        all_edges = r_set | r_plus_set
+
+        for u, v in sorted(all_edges):
+
+            in_r = (u, v) in r_set
+            in_r_plus = (u, v) in r_plus_set
+
+            if in_r and in_r_plus:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="darkgreen",
+                    penwidth="3"
+                )
+
+            elif in_r:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="lightgray"
+                )
+
+            else:
+
+                g.edge(
+                    str(u),
+                    str(v),
+                    color="black",
+                    penwidth="3"
+                )
+
+        st.graphviz_chart(
+            g,
+            use_container_width=True
+        )
+
+    with col2:
+
+        st.markdown(
+            "### Adjacency Matrix of R⁺"
+        )
+
+        matrix_df = adjacency_matrix_dataframe(
+            AB,
+            transitive_closure
+        )
+
+        st.dataframe(
+            matrix_df.astype(str),
+            use_container_width=True
+        )
+
+    st.success("""
+    R⁺ contains exactly the pairs that are reachable
+    in the directed graph.
+
+    The directed graph and adjacency matrix above
+    provide two equivalent representations of this
+    reachability information.
+    """)
+
+    st.markdown(
+        "### Knowledge Check"
+    )
+
+    with st.expander(
+        "Think About These Questions"
+    ):
+
+        st.markdown("""
+**1. True or False**
+
+The transitive closure of the Immediate Successor
+relation on a finite ordered set is the Less Than
+relation on the same set.
+
+---
+
+**2. True or False**
+
+If a relation R is already transitive, then the
+transitive closure of R is equal to R.
+
+---
+
+**3. True or False**
+
+The transitive closure never removes pairs from a
+relation.
+
+---
+
+**4. Challenge Question**
+
+Consider the relation
+
+(a == b) or (abs(a - b) == 2)
+
+What relation do you think its transitive closure
+becomes on the integers 1,2,3,4,5,... ?
+""")
+
+    st.success("""
+    Summary
+
+    • Rᵏ contains all pairs reachable by a path of length k.
+
+    • Aᵏ is the adjacency matrix of Rᵏ.
+
+    • R⁺ contains all pairs reachable by a path of positive length.
+
+    • The transitive closure captures reachability in the directed graph.
+    """)
+
+if (st.session_state.validated_AB is not None
+    and st.session_state.validated_relation_code is not None
+    and st.session_state.relation_instance is not None):
+    with st.expander(
+        "Applications of Reachability and Transitive Closure"
+    ):
+        st.markdown("""
+    These ideas have many practical applications in
+    computer science and everyday life.
+
+    ### Flights Between Cities
+
+    Suppose:
+
+    - Each vertex represents a city.
+    - An edge from city A to city B represents a direct flight.
+
+    Then:
+
+    - **R** represents direct flights.
+    - **R²** represents flights reachable with exactly one layover.
+    - **R³** represents flights reachable with exactly two layovers.
+    - **R⁺** represents flights reachable using any number of layovers.
+
+    ### Other Applications
+
+    Reachability and transitive closure also appear in:
+
+    - Course prerequisite planning
+    - Software package dependencies
+    - Route planning and navigation
+    - Social networks
+    - Computer network routing
+
+    In each case, the transitive closure identifies
+    all locations, people, courses, or systems that
+    can be reached through a chain of connections.
+    """)
 
 
