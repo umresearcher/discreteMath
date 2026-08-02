@@ -236,9 +236,13 @@ if st.session_state.validated_AB is not None:
     }
 
     if relation_mode == "Predefined Relation":
+
+        relation_names = list(PREDEFINED_RELATIONS.keys())
+
         chosen_relation = st.selectbox(
             "Select a Relation",
-            list(PREDEFINED_RELATIONS.keys())
+            relation_names,
+            index=relation_names.index("Immediate Successor")
         )
 
         if (
@@ -455,8 +459,7 @@ if (st.session_state.validated_AB is not None
         )
 
     st.info("""
-A path from a to b corresponds to a sequence of
-arrows in the directed graph.
+A path from a to b corresponds to a sequence of edges in the directed graph.
 
 In the next step, we will determine which pairs of 
 elements are reachable by paths of a given length.
@@ -515,31 +518,30 @@ if (st.session_state.validated_AB is not None
         )
     )
 
-    best_pair = max(
-        witness_paths,
-        key=lambda pair: (
-            len(set(witness_paths[pair])),
-            -sum(
-                1
-                for i in range(
-                    len(witness_paths[pair]) - 1
-                )
-                if witness_paths[pair][i]
-                == witness_paths[pair][i + 1]
-            )
-        )
-    )
-
-    best_path = witness_paths[best_pair]
-
     if len(reachability_relation) == 0:
 
         st.info(
-            f"No pairs are connected by a path of "
-            f"exactly {k} hops."
+            f"No pairs are reachable by a path of length {k}."
         )
 
     else:
+
+        best_pair = max(
+            witness_paths,
+            key=lambda pair: (
+                len(set(witness_paths[pair])),
+                -sum(
+                    1
+                    for i in range(
+                        len(witness_paths[pair]) - 1
+                    )
+                    if witness_paths[pair][i]
+                    == witness_paths[pair][i + 1]
+                )
+            )
+        )
+
+        best_path = witness_paths[best_pair]
 
         st.markdown(
             f"**Pairs reachable by a path of length {k}:**"
@@ -640,6 +642,16 @@ One path is:
         for n in AB:
             g.node(str(n))
 
+        # Encourage a compact layout
+        for i in range(
+            len(AB) - 1
+        ):
+            g.edge(
+                str(AB[i]),
+                str(AB[i + 1]),
+                style="invis"
+            )
+
         for u, v in relation_instance:
 
             if (u, v) in path_edges:
@@ -663,3 +675,155 @@ One path is:
             g,
             use_container_width=True
         )
+
+def superscript(n):
+    mapping = {
+        "0": "⁰",
+        "1": "¹",
+        "2": "²",
+        "3": "³",
+        "4": "⁴",
+        "5": "⁵",
+        "6": "⁶",
+        "7": "⁷",
+        "8": "⁸",
+        "9": "⁹"
+    }
+
+    return "".join(
+        mapping[d]
+        for d in str(n)
+    )
+
+if (st.session_state.validated_AB is not None
+    and st.session_state.validated_relation_code is not None
+    and st.session_state.relation_instance is not None):
+
+    st.subheader(
+        "Step 4: Relation Powers"
+    )
+
+    st.markdown("""
+    In Step 3, we explored pairs that are reachable
+    by paths of a given length.
+
+    The relation consisting of all pairs reachable by a path of length k is denoted by Rᵏ.
+    """)    
+
+    st.markdown("""
+    - **R¹** consists of all pairs in the original relation R.
+    - **R²** consists of all pairs connected by a path of length 2.
+    - **R³** consists of all pairs connected by a path of length 3.
+    - More generally, **Rᵏ** consists of all pairs connected by a path of length k.
+    """)
+
+    power_k = st.slider(
+        "Select k for Rᵏ",
+        min_value=1,
+        max_value=min(len(AB), 5),
+        value=2,
+        key="relation_power_slider"
+    )
+
+    power_relation, witness_paths = (
+        relation_power_with_paths(
+            AB,
+            relation_instance,
+            power_k
+        )
+    )
+
+    st.markdown(
+        f"### Relation R{superscript(power_k)}"
+    )
+
+    pairs_text = (
+        "{"
+        + ", ".join(
+            f"({a},{b})"
+            for a, b in sorted(power_relation)
+        )
+        + "}"
+    )
+
+    st.code(pairs_text)
+
+    if len(power_relation) > 0:
+        st.info(
+            f"R{superscript(power_k)} is itself a relation on A.\n\n"
+            f"Each pair in R{superscript(power_k)} represents two vertices "
+            f"that are reachable by a path of length {power_k} in the original graph."
+        )
+    else:
+        st.info(
+            f"R{superscript(power_k)} is itself a relation on A.\n\n"
+            f"In this case, R{superscript(power_k)} is the empty relation."
+        )
+
+    st.markdown(
+        f"### Directed Graph of R{superscript(power_k)}"
+    )
+
+    st.caption(
+        f"There is an edge from a to b whenever "
+        f"(a,b) belongs to R{superscript(power_k)}."
+    )
+
+    g = graphviz.Digraph(format="png")
+    g.attr(rankdir="LR")
+
+    g.attr(
+        "node",
+        shape="circle",
+        fontsize="12"
+    )
+
+    for n in AB:
+        g.node(str(n))
+
+    # Encourage a compact layout
+    for i in range(
+        len(AB) - 1
+    ):
+        g.edge(
+            str(AB[i]),
+            str(AB[i + 1]),
+            style="invis"
+        )
+
+    for u, v in power_relation:
+        g.edge(
+            str(u),
+            str(v)
+        )
+
+    st.graphviz_chart(
+        g,
+        use_container_width=True
+    )
+
+    st.markdown(
+        f"### Adjacency Matrix of R{superscript(power_k)}"
+    )
+
+    st.caption(
+        f"""
+    Rows correspond to a and columns correspond to b.
+
+    M[a,b] = 1 iff (a,b) belongs to R{superscript(power_k)}.
+    """
+    )
+
+    matrix_df = (
+        adjacency_matrix_dataframe(
+            AB,
+            power_relation
+        )
+    )
+
+    st.dataframe(
+        matrix_df,
+        use_container_width=True
+    )
+
+
