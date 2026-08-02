@@ -368,3 +368,190 @@ def adjacency_matrix_dataframe(nodes, relation):
         index=nodes,
         columns=nodes
     )
+
+def relation_power(
+    AB,
+    relation_instance,
+    k
+):
+    """
+    Returns R^k as a set of ordered pairs.
+    """
+
+    if k <= 0:
+        return set()
+
+    current = set(relation_instance)
+
+    if k == 1:
+        return current
+
+    for _ in range(2, k + 1):
+
+        next_relation = set()
+
+        for a, b in current:
+
+            for c, d in relation_instance:
+
+                if b == c:
+                    next_relation.add((a, d))
+
+        current = next_relation
+
+    return current
+
+def find_path_of_length_k(
+    AB,
+    relation_instance,
+    start,
+    end,
+    k
+):
+    """
+    Returns one path of exactly k hops from
+    start to end, or None if no such path exists.
+
+    Preference is given to:
+    1. Non-self-loop edges.
+    2. Vertices not already on the path.
+    """
+
+    adjacency = {}
+
+    for v in AB:
+        adjacency[v] = []
+
+    for u, v in relation_instance:
+        adjacency[u].append(v)
+
+    def dfs(current, hops_remaining, path):
+
+        if hops_remaining == 0:
+
+            if current == end:
+                return path
+
+            return None
+
+        neighbors = sorted(
+            adjacency[current],
+            key=lambda nxt: (
+                nxt == current,  # self-loops last
+                nxt in path      # repeated vertices last
+            )
+        )
+
+        for nxt in neighbors:
+
+            result = dfs(
+                nxt,
+                hops_remaining - 1,
+                path + [nxt]
+            )
+
+            if result is not None:
+                return result
+
+        return None
+
+    return dfs(
+        start,
+        k,
+        [start]
+    )
+
+def relation_power_with_paths(
+    AB,
+    relation_instance,
+    k
+):
+    """
+    Computes R^k and stores one witness path for each
+    reachable pair.
+
+    Returns:
+
+        reachable_pairs
+            set of (a,b)
+
+        witness_paths
+            dict mapping
+
+                (a,b) -> [a,...,b]
+
+            where the list contains exactly k hops.
+    """
+
+    if k < 1:
+        return set(), {}
+
+    current = {}
+
+    for a, b in relation_instance:
+        current[(a, b)] = [a, b]
+
+    if k == 1:
+        return set(current.keys()), current
+
+    for _ in range(2, k + 1):
+
+        next_paths = {}
+
+        for (start, mid), path1 in current.items():
+
+            for u, end in relation_instance:
+
+                if mid != u:
+                    continue
+
+                candidate_path = (
+                    path1 + [end]
+                )
+
+                pair = (start, end)
+
+                if pair not in next_paths:
+
+                    next_paths[pair] = candidate_path
+
+                else:
+
+                    old_path = next_paths[pair]
+
+                    old_score = (
+                        len(set(old_path)),
+                        -sum(
+                            1
+                            for i in range(
+                                len(old_path) - 1
+                            )
+                            if old_path[i]
+                               == old_path[i + 1]
+                        )
+                    )
+
+                    new_score = (
+                        len(set(candidate_path)),
+                        -sum(
+                            1
+                            for i in range(
+                                len(candidate_path) - 1
+                            )
+                            if candidate_path[i]
+                               == candidate_path[i + 1]
+                        )
+                    )
+
+                    if new_score > old_score:
+                        next_paths[pair] = (
+                            candidate_path
+                        )
+
+        current = next_paths
+
+    return (
+        set(current.keys()),
+        current
+    )
+
