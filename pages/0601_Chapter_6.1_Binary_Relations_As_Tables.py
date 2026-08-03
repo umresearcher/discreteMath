@@ -283,7 +283,7 @@ The following constructs are not allowed:
         return (a % 2) == (b % 2)
     """,
 
-        "Divides":
+        "Evenly Divides":
     """def relationDef(a, b):
         if a == 0:
             return False
