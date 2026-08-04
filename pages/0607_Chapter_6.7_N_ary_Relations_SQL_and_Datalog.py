@@ -84,7 +84,7 @@ st.subheader(
 )
 
 st.markdown("""
-An n-ary relation can be represented as a table.
+An n-ary relation can be represented as a table with n columns.
 
 - Columns represent attributes.
 - Rows represent tuples.
