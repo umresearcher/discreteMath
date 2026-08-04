@@ -459,3 +459,9 @@ if st.session_state.relation_instance is not None:
             hide_index=True,
             width="stretch"
         )
+    st.info("""
+    The order of rows in the table does not matter.
+
+    A relation is a set of ordered pairs, so each
+    ordered pair appears at most once.
+    """)
