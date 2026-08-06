@@ -35,9 +35,10 @@ def build_relation_function(code_text):
     )
     return scope["relationDef"]
 
-def validate_relation(code_text, A, B):
+def validate_relation_code(code_text):
 
     try:
+
         tree = ast.parse(code_text)
 
         funcs = [
@@ -102,44 +103,76 @@ def validate_relation(code_text, A, B):
                 "Function must contain a return statement."
             )
 
-        rel_func = build_relation_function(
-            code_text
-        )
-
-        # ----------------------------------
-        # Validate on the actual domain
-        # ----------------------------------
-
-        for a in A:
-            for b in B:
-
-                try:
-                    result = rel_func(a, b)
-
-                except Exception as e:
-
-                    return (
-                        False,
-                        f"Function failed for "
-                        f"({a}, {b}): {e}"
-                    )
-
-                if not isinstance(result, bool):
-
-                    return (
-                        False,
-                        f"relationDef({a}, {b}) "
-                        f"returned "
-                        f"{type(result).__name__}. "
-                        "Every pair must return "
-                        "True or False."
-                    )
-
-        return True, "Function is valid."
+        return True, "Code is valid."
 
     except SyntaxError as e:
 
-        return False, f"Syntax error: {e}"
+        return (
+            False,
+            f"Syntax error: {e}"
+        )
+
+def validate_relation_on_sets(
+    A,
+    B,
+    rel_func
+):
+
+    for a in A:
+        for b in B:
+
+            try:
+
+                result = rel_func(a, b)
+
+            except Exception as e:
+
+                return (
+                    False,
+                    f"Function failed for "
+                    f"({a}, {b}): {e}"
+                )
+
+            if not isinstance(result, bool):
+
+                return (
+                    False,
+                    f"relationDef({a}, {b}) "
+                    f"returned "
+                    f"{type(result).__name__}. "
+                    "Every pair must return "
+                    "True or False."
+                )
+
+    return True, "Function works correctly on A × B."
+
+def validate_relation(code_text, A, B):
+
+    is_valid, message = (
+        validate_relation_code(
+            code_text
+        )
+    )
+
+    if not is_valid:
+        return False, message
+
+    rel_func = build_relation_function(
+        code_text
+    )
+
+    works, message = (
+        validate_relation_on_sets(
+            A,
+            B,
+            rel_func
+        )
+    )
+
+    if not works:
+        return False, message
+
+    return True, "Function is valid."
 
 def preview_relation(A, B, rel_func, sample_size=50):
     pairs = [

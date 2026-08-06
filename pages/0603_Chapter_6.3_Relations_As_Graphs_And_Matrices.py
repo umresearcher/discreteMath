@@ -453,17 +453,14 @@ if (
         expanded=False
     ):
         st.markdown("""
-    - Reflexive
-    - Anti-reflexive
-    - Symmetric
-    - Antisymmetric
-    - Transitive
+    - Reflexive: For every x ∈ A, (x, x) ∈ R.
+    - Anti-reflexive: For every x ∈ A, (x, x) ∉ R.
+    - Symmetric: For every pair (x, y) ∈ R, (y, x) must also belong to R.
+    - Antisymmetric: For every pair (x, y) ∈ R where x ≠ y, (y, x) must not belong to R.
+    (Equivalently, if (x, y) ∈ R and (y, x) ∈ R, then x = y.)    
+    - Transitive: If (x, y) ∈ R and (y, z) ∈ R, then (x, z) must also belong to R.
     """)
     
-    st.markdown("""
-    Select a property to explore in detail.
-    """)
-
     props = relation_properties(
         AB,
         relation_instance
@@ -517,7 +514,8 @@ if (
 
         #### Matrix Interpretation
 
-        Every diagonal entry is `1`.
+        For every element `a ∈ A`,
+        the matrix entry `M[a,a]` is `1`.        
         """)
 
         if props["Reflexive"]:
@@ -692,7 +690,8 @@ does not belong to the relation.
                 )
 
                 st.caption(
-                    "All diagonal entries are 1."
+                    "For every element a ∈ A, M[a,a] = 1, "
+                    "so the relation is reflexive."
                 )
 
     if selected_property == "Anti-reflexive":
@@ -711,7 +710,8 @@ does not belong to the relation.
 
         #### Matrix Interpretation
 
-        Every diagonal entry is `0`.
+        For every element `a ∈ A`,
+        the matrix entry `M[a,a]` is `0`.
         """)
 
         if props["AntiReflexive"]:
@@ -836,7 +836,8 @@ does not belong to the relation.
                 )
 
                 st.caption(
-                    f"M[{counterexample},{counterexample}] = 1."
+                    f"M[{counterexample},{counterexample}] = 1, "
+                    "so the relation is not anti-reflexive."
                 )
         else:
 
@@ -919,7 +920,8 @@ does not belong to the relation.
                 )
 
                 st.caption(
-                    "All diagonal entries are 0."
+                    "For every element a ∈ A, M[a,a] = 0, "
+                    "so the relation is anti-reflexive."
                 )
 
     if selected_property == "Symmetric":
@@ -1421,11 +1423,7 @@ does not belong to the relation.
 
         #### Matrix Interpretation
 
-        If
-
-        `M[a,b] = 1` and `M[b,c] = 1`,
-
-        then
+        Whenever `M[a,b] = 1` and `M[b,c] = 1`,
 
         `M[a,c]` must also equal `1`.
         """)

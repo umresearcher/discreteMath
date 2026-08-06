@@ -624,57 +624,64 @@ One path is:
             "The green edges show the path used in the example."
         )
 
-        path_edges = set(
-            (best_path[i], best_path[i + 1])
-            for i in range(len(best_path) - 1)
-        )
+        col1, col2 = st.columns(2)
 
-        g = graphviz.Digraph(format="png")
-
-        g.attr(rankdir="LR")
-
-        g.attr(
-            "node",
-            shape="circle",
-            fontsize="12"
-        )
-
-        for n in AB:
-            g.node(str(n))
-
-        # Encourage a compact layout
-        for i in range(
-            len(AB) - 1
-        ):
-            g.edge(
-                str(AB[i]),
-                str(AB[i + 1]),
-                style="invis"
+        with col1:
+            path_edges = set(
+                (best_path[i], best_path[i + 1])
+                for i in range(len(best_path) - 1)
             )
 
-        for u, v in relation_instance:
+            g = graphviz.Digraph(format="png")
 
-            if (u, v) in path_edges:
+            g.attr(rankdir="LR")
 
+            g.attr(
+                "node",
+                shape="circle",
+                fontsize="12"
+            )
+
+            for n in AB:
+                g.node(str(n))
+
+            # Encourage a compact layout
+            for i in range(
+                len(AB) - 1
+            ):
                 g.edge(
-                    str(u),
-                    str(v),
-                    color="green",
-                    penwidth="3"
+                    str(AB[i]),
+                    str(AB[i + 1]),
+                    style="invis"
                 )
 
-            else:
+            for u, v in relation_instance:
 
-                g.edge(
-                    str(u),
-                    str(v),
-                    color="gray"
-                )
+                if (u, v) in path_edges:
 
-        st.graphviz_chart(
-            g,
-            use_container_width=True
-        )
+                    g.edge(
+                        str(u),
+                        str(v),
+                        color="green",
+                        penwidth="3"
+                    )
+
+                else:
+
+                    g.edge(
+                        str(u),
+                        str(v),
+                        color="gray"
+                    )
+
+            st.graphviz_chart(
+                g,
+                use_container_width=True
+            )
+
+        with col2:
+            st.markdown("")
+
 
 def superscript(n):
     mapping = {
@@ -899,93 +906,93 @@ if (st.session_state.validated_AB is not None
     )
 
     st.markdown("""
-In Step 4, we saw that **Rᵏ** contains all pairs
-that are reachable by a path of length **k**.
+    In Step 4, we saw that **Rᵏ** contains all pairs
+    that are reachable by a path of length **k**.
 
-We also represented these relations using
-**adjacency matrices**.
+    We also represented these relations using
+    **adjacency matrices**.
 
-An important question is:
+    An important question is:
 
-> How can we compute the adjacency matrix of R²,
-> R³, and Rᵏ directly from the adjacency matrix of R?
+    > How can we compute the adjacency matrices of R²,
+    > R³, and Rᵏ directly from M (the adjacency matrix
+    > of R)?
 
-To answer this question, we use **Boolean matrix multiplication**.
-""")
+    To answer this question, we use a special form
+    of matrix multiplication for adjacency matrices.
 
-    st.markdown("""
-Recall that an adjacency matrix contains only 0s and 1s.
+    The adjacency matrix M contains only 0s and 1s
+    and is therefore a Boolean matrix.
+    """)
 
-For Boolean matrices:
+    with st.expander(
+        "Boolean Matrix Multiplication"
+    ):
+        st.markdown("""
+    For Boolean matrices:
 
-- **AND** plays the role of multiplication.
-- **OR** plays the role of addition.
-""")
+    - **AND** plays the role of multiplication.
+    - **OR** plays the role of addition.
 
-    st.info("""
-Boolean Matrix Multiplication
+    The Boolean square **M² = M × M** is computed as
 
-Multiplication (×)  →  AND
+    (M²)[a,b]
 
-Addition (+)        →  OR
-""")
+    =
+    (M[a,1] AND M[1,b])
+    OR
+    (M[a,2] AND M[2,b])
+    OR
+    ⋯
 
-    st.markdown("""
-To determine whether **(a,b)** belongs to **R²**,
-we look for an intermediate vertex **x** such that:
+    If there exists an element x such that
 
-- (a,x) belongs to R, and
-- (x,b) belongs to R.
+    M[a,x] = 1 and M[x,b] = 1,
 
-In graph terms:
+    then (M²)[a,b] = 1.
 
-a → x → b
+    Otherwise, (M²)[a,b] = 0.
+    """)
 
-In logical terms:
+        st.info("""
+    **Interpretation**
 
-there exists an x such that
+    **AND** asks:
 
-(a,x) ∈ R and (x,b) ∈ R.
-
-Boolean matrix multiplication checks all possible intermediate vertices x.
-""")
-
-    st.markdown("""
-This leads to the Boolean matrix multiplication rule:
-
-(A²)[a,b]
-
-=
-(A[a,1] AND A[1,b])
-OR
-(A[a,2] AND A[2,b])
-OR
-⋯
-
-If at least one intermediate vertex works,
-then (A²)[a,b] = 1.
-Otherwise, (A²)[a,b] = 0.
-""")
-
-    st.info("""
-    Interpretation
-
-    AND asks:
     Can we go from a to x and then from x to b?
 
-    OR asks:
-    Is there at least one intermediate vertex x
+    **OR** asks:
+
+    Is there at least one intermediate element x
     that makes the path possible?
     """)
 
+    st.markdown("""
+    To determine whether **(a,b)** belongs to **R²**:
+
+    - In terms of the **ordered pairs** representation,
+    we ask whether there exists an intermediate
+    element **x** such that
+    **(a,x) ∈ R** and **(x,b) ∈ R**.
+
+    - In terms of the **directed graph** representation,
+    we ask whether there exists an intermediate
+    vertex **x** such that the path
+    **a → x → b** exists.
+
+    - In terms of the **adjacency matrix**
+    representation, we ask whether
+    **(M²)[a,b] = 1**.
+    """)
+
     st.markdown(
-        "### Explore a Single Entry of A²"
+        "### Explore a Single Entry of M²"
     )
 
     st.markdown("""
     Choose a row vertex **a** and a column vertex **b**.
 
-    We will determine whether **(A²)[a,b]** is 0 or 1
+    We will determine whether **(M²)[a,b]** equals 0 or 1
     using Boolean matrix multiplication.
     """)
 
@@ -1006,7 +1013,7 @@ Otherwise, (A²)[a,b] = 0.
         )
 
     st.markdown(
-        "#### Adjacency Matrix A"
+        "#### Adjacency Matrix M"
     )
 
     matrix_df = adjacency_matrix_dataframe(
@@ -1029,7 +1036,13 @@ Otherwise, (A²)[a,b] = 0.
 
     st.dataframe(
         styled_df,
+        hide_index=True,
         use_container_width=True
+    )
+
+    st.caption(
+        f"The highlighted row corresponds to M[{a},x]. "
+        f"The highlighted column corresponds to M[x,{b}]."
     )
 
     rows = []
@@ -1056,20 +1069,21 @@ Otherwise, (A²)[a,b] = 0.
         rows.append(
             {
                 "x": x,
-                f"A[{a},x]": ax,
-                f"A[x,{b}]": xb,
-                f"A[{a},x] AND A[x,{b}]": int(and_value)
+                f"M[{a},x]": ax,
+                f"M[x,{b}]": xb,
+                f"M[{a},x] AND M[x,{b}]": int(and_value)
             }
         )
 
     boolean_df = pd.DataFrame(rows)
 
     st.markdown(
-        f"#### Computing (A²)[{a},{b}]"
+        f"#### Computing (M²)[{a},{b}]"
     )
 
     st.dataframe(
         boolean_df.astype(str),
+        hide_index=True,
         use_container_width=True
     )
 
@@ -1100,7 +1114,7 @@ Otherwise, (A²)[a,b] = 0.
 
     if result == 1:
         st.success(
-            f"(A²)[{a},{b}] = 1"
+            f"(M²)[{a},{b}] = 1"
         )
 
         st.markdown(
@@ -1117,7 +1131,7 @@ Otherwise, (A²)[a,b] = 0.
 
     else:
         st.info(
-            f"(A²)[{a},{b}] = 0"
+            f"(M²)[{a},{b}] = 0"
         )
 
         st.markdown(
@@ -1133,15 +1147,15 @@ Otherwise, (A²)[a,b] = 0.
         )
 
     st.markdown(
-        "### Constructing the Entire Matrix A²"
+        "### Constructing the Entire Matrix M²"
     )
 
     st.markdown("""
-    Every entry of A² is computed in exactly
+    Every entry of M² is computed in exactly
     the same way as the example above.
 
     Applying Boolean matrix multiplication
-    to every entry produces the entire matrix A².
+    to every entry produces the entire matrix M².
     """)
 
     r2_relation, _ = relation_power_with_paths(
@@ -1246,7 +1260,7 @@ Otherwise, (A²)[a,b] = 0.
     with col2:
 
         st.markdown(
-            "#### Matrix A²"
+            "#### Matrix M²"
         )
 
         r2_df = adjacency_matrix_dataframe(
@@ -1260,19 +1274,19 @@ Otherwise, (A²)[a,b] = 0.
         )
 
     st.success(
-        "The matrix A² is identical to the adjacency matrix of R²."
+        "The matrix M² is identical to the adjacency matrix of R²."
     )
 
     st.info("""
     More generally:
 
-    A² is the adjacency matrix of R²
+    M² is the adjacency matrix of R²
 
-    A³ is the adjacency matrix of R³
+    M³ is the adjacency matrix of R³
 
     ...
 
-    Aᵏ is the adjacency matrix of Rᵏ
+    Mᵏ is the adjacency matrix of Rᵏ
     """)
 
 if (st.session_state.validated_AB is not None
@@ -1284,17 +1298,11 @@ if (st.session_state.validated_AB is not None
     )
 
     st.markdown("""
-    We have seen that A² is the adjacency matrix of R².
+    We have seen that **Mᵏ** is the adjacency
+    matrix of **Rᵏ**.
 
-    More generally:
-
-    - A³ is the adjacency matrix of R³.
-    - A⁴ is the adjacency matrix of R⁴.
-    - ...
-    - Aᵏ is the adjacency matrix of Rᵏ.
-
-    Select a value of k and compare the graph and
-    matrix representations.
+    Select a value of **k** and compare the graph
+    and matrix representations.
     """)
 
     k_matrix = st.slider(
@@ -1408,7 +1416,7 @@ if (st.session_state.validated_AB is not None
     with col2:
 
         st.markdown(
-            f"### Matrix A{superscript(k_matrix)}"
+            f"### Matrix M{superscript(k_matrix)}"
         )
 
         matrix_df = adjacency_matrix_dataframe(
@@ -1422,7 +1430,7 @@ if (st.session_state.validated_AB is not None
         )
 
     st.success(
-        f"A{superscript(k_matrix)} is the adjacency matrix "
+        f"M{superscript(k_matrix)} is the adjacency matrix "
         f"of R{superscript(k_matrix)}."
     )
 
@@ -1646,6 +1654,10 @@ to obtain the transitive closure R⁺.
     reachability information.
     """)
 
+if (st.session_state.validated_AB is not None
+    and st.session_state.validated_relation_code is not None
+    and st.session_state.relation_instance is not None):
+
     st.markdown(
         "### Knowledge Check"
     )
@@ -1668,12 +1680,16 @@ relation on the same set.
 If a relation R is already transitive, then the
 transitive closure of R is equal to R.
 
+In other words, is R⁺ = R if R is transitive?
+
 ---
 
 **3. True or False**
 
 The transitive closure never removes pairs from a
 relation.
+
+In other words, is R⁺ ⊇ R?
 
 ---
 
@@ -1687,12 +1703,66 @@ What relation do you think its transitive closure
 becomes on the integers 1,2,3,4,5,... ?
 """)
 
+        with st.expander(
+            "Show Answers"
+        ):
+
+            st.markdown("""
+        **1. True**
+
+        The Immediate Successor relation contains pairs
+        such as (1,2), (2,3), and (3,4).
+
+        Its transitive closure contains all pairs
+        (i,j) where i < j, which is exactly the
+        Less Than relation.
+
+        ---
+
+        **2. True**
+
+        If a relation is already transitive, then
+        no new pairs need to be added.
+
+        Therefore:
+
+        R⁺ = R
+
+        ---
+
+        **3. True**
+
+        The transitive closure only adds pairs.
+
+        It never removes pairs.
+
+        Therefore:
+
+        R⁺ ⊇ R
+
+        ---
+
+        **4. Challenge Question**
+
+        The transitive closure becomes the Same
+        Parity relation.
+
+        Every odd integer becomes reachable from
+        every other odd integer.
+
+        Every even integer becomes reachable from
+        every other even integer.
+
+        Odd integers do not become related to
+        even integers.
+        """)
+
     st.success("""
     Summary
 
     • Rᵏ contains all pairs reachable by a path of length k.
 
-    • Aᵏ is the adjacency matrix of Rᵏ.
+    • Mᵏ is the adjacency matrix of Rᵏ.
 
     • R⁺ contains all pairs reachable by a path of positive length.
 

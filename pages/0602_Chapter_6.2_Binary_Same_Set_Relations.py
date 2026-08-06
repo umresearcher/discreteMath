@@ -18,7 +18,7 @@ In this module, we focus on binary relations where:
 **A = B**
 
 These relations allow us to study important properties such as
-**reflexivity**, **symmetry**, **antisymmetry**, and **transitivity**.
+**reflexivity**, **anti-reflexivity**, **symmetry**, **anti-symmetry**, and **transitivity**.
 """)
 
 st.info(
@@ -426,6 +426,9 @@ if (
     For every pair (x, y) ∈ R where x ≠ y,
     (y, x) must not belong to R.
 
+    Equivalently, if (x, y) ∈ R and
+    (y, x) ∈ R, then x = y.    
+    
     ### Transitive
     If (x, y) ∈ R and (y, z) ∈ R,
     then (x, z) must also belong to R.

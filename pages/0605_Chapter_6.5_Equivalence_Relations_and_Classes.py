@@ -637,85 +637,92 @@ contains all elements related to
         connected component in the graph.
         """)
 
-        g = graphviz.Digraph(
-            format="png"
-        )
+        col1, col2 = st.columns(2)
 
-        g.attr(
-            rankdir="LR"
-        )
+        with col1:
 
-        g.attr(
-            nodesep="0.3"
-        )
-
-        g.attr(
-            ranksep="0.4"
-        )
-
-        g.attr(
-            "node",
-            shape="circle",
-            fontsize="12"
-        )
-
-        class_set = set(
-            equivalence_class
-        )
-
-        for n in AB:
-
-            if n in class_set:
-
-                g.node(
-                    str(n),
-                    style="filled",
-                    fillcolor="lightgreen"
-                )
-
-            else:
-
-                g.node(
-                    str(n)
-                )
-
-        # Encourage a compact layout
-        for i in range(
-            len(AB) - 1
-        ):
-            g.edge(
-                str(AB[i]),
-                str(AB[i + 1]),
-                style="invis"
+            g = graphviz.Digraph(
+                format="png"
             )
 
-        for u, v in relation:
+            g.attr(
+                rankdir="LR"
+            )
 
-            if (
-                u in class_set
-                and
-                v in class_set
+            g.attr(
+                nodesep="0.3"
+            )
+
+            g.attr(
+                ranksep="0.4"
+            )
+
+            g.attr(
+                "node",
+                shape="circle",
+                fontsize="12"
+            )
+
+            class_set = set(
+                equivalence_class
+            )
+
+            for n in AB:
+
+                if n in class_set:
+
+                    g.node(
+                        str(n),
+                        style="filled",
+                        fillcolor="lightgreen"
+                    )
+
+                else:
+
+                    g.node(
+                        str(n)
+                    )
+
+            # Encourage a compact layout
+            for i in range(
+                len(AB) - 1
             ):
-
                 g.edge(
-                    str(u),
-                    str(v),
-                    color="darkgreen",
-                    penwidth="3"
+                    str(AB[i]),
+                    str(AB[i + 1]),
+                    style="invis"
                 )
 
-            else:
+            for u, v in relation:
 
-                g.edge(
-                    str(u),
-                    str(v),
-                    color="gray"
-                )
+                if (
+                    u in class_set
+                    and
+                    v in class_set
+                ):
 
-        st.graphviz_chart(
-            g,
-            use_container_width=True
-        )
+                    g.edge(
+                        str(u),
+                        str(v),
+                        color="darkgreen",
+                        penwidth="3"
+                    )
+
+                else:
+
+                    g.edge(
+                        str(u),
+                        str(v),
+                        color="gray"
+                    )
+
+            st.graphviz_chart(
+                g,
+                use_container_width=True
+            )
+
+        with col2:
+            pass
 
 if (st.session_state.validated_AB is not None
     and st.session_state.validated_relation_code is not None
@@ -800,6 +807,10 @@ if (st.session_state.validated_AB is not None
     equivalence class.
     """)
 
+if (st.session_state.validated_AB is not None
+    and st.session_state.validated_relation_code is not None
+    and st.session_state.relation_instance is not None):
+
         st.markdown(
             "### Knowledge Check"
         )
@@ -810,48 +821,91 @@ if (st.session_state.validated_AB is not None
             st.markdown("""
         **1. True or False**
 
-        Every equivalence relation is reflexive.
+        Different equivalence classes may overlap.
 
         ---
 
         **2. True or False**
 
-        Every equivalence relation is symmetric.
+        Equality is an equivalence relation.
 
         ---
 
         **3. True or False**
-
-        Every equivalence relation is transitive.
-
-        ---
-
-        **4. True or False**
-
-        Different equivalence classes may overlap.
-
-        ---
-
-        **5. True or False**
-
-        Every element belongs to exactly one
-        equivalence class.
-
-        ---
-
-        **6. True or False**
 
         The Same Parity relation partitions the integers
         into two equivalence classes.
 
         ---
 
-        **7. Challenge Question**
+        **4. Challenge Question**
 
         If an equivalence relation on a set has only
         one equivalence class, what does its graph
         look like?
         """)
+
+            with st.expander(
+                "Show Answers"
+            ):
+
+                st.markdown("""
+            **1. False**
+
+            The equivalence classes of an equivalence
+            relation form a partition of the set.
+
+            Every element belongs to exactly one
+            equivalence class, and different equivalence
+            classes do not overlap.
+
+            ---
+
+            **2. True**
+
+            Equality is an equivalence relation.
+
+            - Every element is equal to itself (reflexive).
+            - If a = b, then b = a (symmetric).
+            - If a = b and b = c, then a = c (transitive).
+
+            ---
+
+            **3. True**
+
+            Same Parity is an equivalence relation.
+
+            - Every integer has the same parity as itself.
+            - If a has the same parity as b, then b has
+                the same parity as a.
+            - If a has the same parity as b and b has
+                the same parity as c, then a has the same
+                parity as c.
+
+            Its equivalence classes are:
+
+            [Even] = {all even integers}
+
+            [Odd] = {all odd integers}
+
+            Every integer belongs to exactly one of
+            these two equivalence classes.
+
+            ---
+
+            **4. Challenge Question**
+
+            If an equivalence relation has only one
+            equivalence class, then every element is
+            related to every other element.
+
+            Therefore, for every pair of elements
+            (a, b), the pair (a, b) belongs to R.
+
+            The graph contains an edge from every
+            vertex to every vertex, including
+            self-loops.
+            """)
 
         st.success("""
         Summary
@@ -891,7 +945,7 @@ if (st.session_state.validated_AB is not None
         - United States of America
 
         may be treated as equivalent because they refer
-        to the same entity.
+        to the same real-world entity.
 
         ### Classification
 

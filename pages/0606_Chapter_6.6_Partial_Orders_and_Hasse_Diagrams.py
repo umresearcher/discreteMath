@@ -1040,23 +1040,137 @@ if (st.session_state.validated_AB is not None
     Which elements are maximal?
     """)
 
-    st.success("""
-    Summary
+        with st.expander(
+            "Show Answers"
+        ):
 
-    • A partial order is reflexive,
-    antisymmetric, and transitive.
+            st.markdown("""
+        **1. True**
 
-    • A total order is a partial order in
-    which every pair of distinct elements
-    is comparable.
+        A partial order must be:
 
-    • A Hasse diagram removes self-loops and
-    transitive edges.
+        - Reflexive
+        - Antisymmetric
+        - Transitive
 
-    • In a Hasse diagram, minimal elements
-    appear at the bottom and maximal
-    elements appear at the top.
-    """)
+        ---
+
+        **2. False**
+
+        A partial order is antisymmetric, not symmetric.
+
+        For example, ≤ is a partial order but is not
+        symmetric.
+
+        ---
+
+        **3. True**
+
+        Every total order is a partial order in which
+        every pair of distinct elements is comparable.
+
+        ---
+
+        **4. True**
+
+        This is the defining property of a total order.
+
+        Every pair of distinct elements must be
+        comparable.
+
+        ---
+
+        **5. True**
+
+        A partial order may have multiple minimal
+        elements.
+
+        For example, under the "Evenly Divides"
+        relation on {2,3,6}, both 2 and 3 are minimal.
+
+        ---
+
+        **6. True**
+
+        A partial order on a finite set always has
+        at least one minimal element and at least
+        one maximal element.
+        """)
+
+            with st.expander(
+                "Why does a finite partial order always have a minimal and maximal element?"
+            ):
+                st.markdown("""
+            Suppose a finite partial order had no minimal
+            element.
+
+            Then every element would have another distinct
+            element below it.
+
+            Following these elements downward would produce
+            an infinite chain of distinct elements, which is
+            impossible because the set is finite.
+
+            Therefore, a finite partial order must contain
+            at least one minimal element.
+
+            A similar argument shows that it must also contain
+            at least one maximal element.
+            """)        
+
+            st.markdown("""
+        ---
+
+        **7. False**
+
+        A Hasse diagram removes:
+
+        - self-loops
+        - edges implied by transitivity
+
+        Only the essential ordering relationships
+        are shown.
+
+        ---
+
+        **8. Challenge Question**
+
+        For the relation "Evenly Divides" on
+
+        {1, 2, 3, 6}
+
+        Minimal elements:
+
+        {1}
+
+        Maximal elements:
+
+        {6}
+
+        Since 1 evenly divides every element,
+        nothing is below 1.
+
+        Since no element is above 6,
+        it is maximal.
+        """)
+
+            st.success("""
+            Summary
+
+            • A partial order is reflexive,
+            antisymmetric, and transitive.
+
+            • A total order is a partial order in
+            which every pair of distinct elements
+            is comparable.
+
+            • A Hasse diagram removes self-loops and
+            transitive edges.
+
+            • In a Hasse diagram, minimal elements
+            appear at the bottom and maximal
+            elements appear at the top.
+            """)
 
 if (st.session_state.validated_AB is not None
     and st.session_state.validated_relation_code is not None

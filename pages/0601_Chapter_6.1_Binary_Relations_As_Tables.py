@@ -319,36 +319,79 @@ The following constructs are not allowed:
         )
 
     if relation_mode == "Predefined Relation":
+
         if (
             chosen_relation
             != st.session_state.last_predefined_relation
         ):
             st.session_state.relation_instance = None
+
             st.session_state.last_predefined_relation = (
                 chosen_relation
             )
-        st.session_state.validated_relation_code = relation_code
-        st.session_state.relation_function = (
-            build_relation_function(relation_code)
+
+        rel_func = build_relation_function(
+            relation_code
         )
+
+        works, message = (
+            validate_relation_on_sets(
+                A,
+                B,
+                rel_func
+            )
+        )
+
+        if works:
+
+            st.session_state.validated_relation_code = (
+                relation_code
+            )
+
+            st.session_state.relation_function = (
+                rel_func
+            )
+
+        else:
+
+            st.session_state.validated_relation_code = None
+            st.session_state.relation_function = None
+            st.session_state.relation_instance = None
+
+            st.error(message)
+
     else:
+
         if st.button(
             "Validate Relation Definition"
         ):
+
             is_valid, message = validate_relation(
                 relation_code,
                 A,
                 B
             )
+
             if is_valid:
-                st.session_state.validated_relation_code = relation_code
-                st.session_state.relation_function = (
-                    build_relation_function(relation_code)
+
+                st.session_state.validated_relation_code = (
+                    relation_code
                 )
+
+                st.session_state.relation_function = (
+                    build_relation_function(
+                        relation_code
+                    )
+                )
+
                 st.session_state.relation_instance = None
+
                 st.success(message)
-            else:
-                st.error(message)
+
+        else:
+
+            st.error(message)
+
 
 # --------------------------------------------------
 # Step 3: Preview Relation Behavior
