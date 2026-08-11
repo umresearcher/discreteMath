@@ -373,24 +373,20 @@ The following constructs are not allowed:
             )
 
             if is_valid:
-
                 st.session_state.validated_relation_code = (
                     relation_code
                 )
-
                 st.session_state.relation_function = (
                     build_relation_function(
                         relation_code
                     )
                 )
-
                 st.session_state.relation_instance = None
-
                 st.success(message)
 
-        else:
-
-            st.error(message)
+            else:
+                st.session_state.relation_function = None
+                st.error(message)
 
 
 # --------------------------------------------------
@@ -466,7 +462,12 @@ if (
 # Step 4: Display Relation Instance
 # --------------------------------------------------
 
-if st.session_state.relation_instance is not None:
+if (
+    st.session_state.validated_A is not None
+    and st.session_state.validated_B is not None
+    and st.session_state.relation_function is not None
+    and st.session_state.relation_instance is not None
+):
     relation = st.session_state.relation_instance
     st.subheader("Step 4: Display Relation Instance")
     st.metric(

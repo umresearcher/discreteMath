@@ -315,12 +315,13 @@ if st.session_state.validated_AB is not None:
                 st.session_state.relation_instance = None
                 st.success(message)
             else:
+                st.session_state.relation_function = None
                 st.error(message)
 
 if (
     st.session_state.validated_AB is not None
-    and
-    st.session_state.validated_relation_code is not None
+    and st.session_state.relation_function is not None
+    and st.session_state.validated_relation_code is not None
 ):
 
     if st.button(
@@ -341,7 +342,13 @@ if (
             relation
         )
 
-if st.session_state.relation_instance is not None:
+
+if (
+    st.session_state.validated_AB is not None
+    and st.session_state.relation_function is not None
+    and st.session_state.validated_relation_code is not None
+    and st.session_state.relation_instance is not None
+):
     relation = st.session_state.relation_instance
     col1, col2 = st.columns(2)
     with col1:
@@ -356,6 +363,7 @@ if st.session_state.relation_instance is not None:
         )
 
 if (st.session_state.validated_AB is not None
+    and st.session_state.relation_function is not None
     and st.session_state.validated_relation_code is not None
     and st.session_state.relation_instance is not None):
 
@@ -489,6 +497,7 @@ if (st.session_state.validated_AB is not None
     """)
 
 if (st.session_state.validated_AB is not None
+    and st.session_state.relation_function is not None
     and st.session_state.validated_relation_code is not None
     and st.session_state.relation_instance is not None):
 
@@ -557,6 +566,7 @@ The relation is not an equivalence relation because it does not satisfy all thre
 """)
 
 if (st.session_state.validated_AB is not None
+    and st.session_state.relation_function is not None
     and st.session_state.validated_relation_code is not None
     and st.session_state.relation_instance is not None):
     if reflexive and symmetric and transitive:
@@ -725,6 +735,7 @@ contains all elements related to
             pass
 
 if (st.session_state.validated_AB is not None
+    and st.session_state.relation_function is not None
     and st.session_state.validated_relation_code is not None
     and st.session_state.relation_instance is not None):
     if reflexive and symmetric and transitive:
@@ -808,6 +819,7 @@ if (st.session_state.validated_AB is not None
     """)
 
 if (st.session_state.validated_AB is not None
+    and st.session_state.relation_function is not None
     and st.session_state.validated_relation_code is not None
     and st.session_state.relation_instance is not None):
 

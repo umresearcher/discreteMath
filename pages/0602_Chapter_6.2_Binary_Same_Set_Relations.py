@@ -278,8 +278,8 @@ else:
                 st.session_state.relation_instance = None
                 st.success(message)
             else:
+                st.session_state.relation_function = None
                 st.error(message)
-                #st.session_state.validated_relation_code = None
 
 # --------------------------------------------------
 # Step 3: Preview Relation Behavior
@@ -335,9 +335,9 @@ if (
 # --------------------------------------------------
 
 if (
-    st.session_state.validated_A is not None
-    and
+    st.session_state.validated_A is not None and
     st.session_state.validated_relation_code is not None
+    and st.session_state.relation_function is not None
 ):
     st.subheader("Step 4: Build the Relation")
     st.markdown("""
@@ -356,9 +356,10 @@ are included in the relation.
 
 #Display relation instance
 if (
-    st.session_state.validated_A is not None
-    and
-    st.session_state.relation_instance is not None
+    st.session_state.validated_A is not None and
+    st.session_state.validated_relation_code is not None
+    and st.session_state.relation_function is not None
+    and st.session_state.relation_instance is not None
 ):
     relation = st.session_state.relation_instance
     #st.subheader("Step 5: View the Relation")
@@ -402,9 +403,10 @@ if (
 # --------------------------------------------------
 
 if (
-    st.session_state.relation_instance is not None
-    and
-    st.session_state.validated_A is not None
+    st.session_state.validated_A is not None and
+    st.session_state.validated_relation_code is not None
+    and st.session_state.relation_function is not None
+    and st.session_state.relation_instance is not None
 ):
     st.subheader("Step 5: Investigate Relation Properties")
     with st.expander(

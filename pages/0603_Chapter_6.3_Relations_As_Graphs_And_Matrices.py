@@ -285,6 +285,7 @@ else:
                 st.session_state.relation_instance = None
                 st.success(message)
             else:
+                st.session_state.relation_function = None
                 st.error(message)
 
 # --------------------------------------------------
@@ -293,6 +294,7 @@ else:
 
 if (
     st.session_state.validated_AB is not None
+    and st.session_state.relation_function is not None
     and st.session_state.validated_relation_code is not None
 ):
     st.subheader("Step 3: Build the Relation")
@@ -326,6 +328,7 @@ if (
             )
 
 if (st.session_state.validated_AB is not None
+    and st.session_state.relation_function is not None
     and st.session_state.validated_relation_code is not None
     and st.session_state.relation_instance is not None):
 
@@ -438,8 +441,8 @@ if (st.session_state.validated_AB is not None
 
 if (
     st.session_state.relation_instance is not None
-    and
-    st.session_state.validated_AB is not None
+    and st.session_state.validated_AB is not None
+    and st.session_state.relation_function is not None
 ):
 
     st.subheader("Step 5: Explore Relation Properties")
