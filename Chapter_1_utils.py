@@ -39,6 +39,10 @@ def eval_logic(expr_str, env):
 
     s = expr_str
 
+    # constants
+    s = s.replace("T", " True ")
+    s = s.replace("F", " False ")
+
     s = s.replace("∧", " & ")
     s = s.replace("∨", " | ")
     s = s.replace("⊕", " ^ ")
@@ -166,3 +170,77 @@ def check_equivalence(expr1, expr2):
             return False
 
     return True
+
+def generate_equivalence_truth_table(expr1, expr2):
+    """
+    Generate a truth table comparing two logically equivalent
+    expressions.
+    """
+
+    variables = sorted(
+        set(
+            extract_variables(expr1)
+            +
+            extract_variables(expr2)
+        )
+    )
+
+    rows = []
+
+    for values in itertools.product(
+        [True, False],
+        repeat=len(variables)
+    ):
+
+        env = dict(
+            zip(variables, values)
+        )
+
+        result1 = eval_logic(
+            expr1,
+            env
+        )
+
+        result2 = eval_logic(
+            expr2,
+            env
+        )
+
+        row = {}
+
+        for var in variables:
+            row[var] = (
+                "T"
+                if env[var]
+                else "F"
+            )
+
+        row[expr1] = (
+            "T"
+            if result1 is True
+            else (
+                "F"
+                if result1 is False
+                else None
+            )
+        )
+
+        row[expr2] = (
+            "T"
+            if result2 is True
+            else (
+                "F"
+                if result2 is False
+                else None
+            )
+        )
+
+        row["Match"] = (
+            "✅"
+            if result1 == result2
+            else "❌"
+        )
+
+        rows.append(row)
+
+    return pd.DataFrame(rows)
