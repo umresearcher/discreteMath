@@ -9,37 +9,8 @@ In Module 6, we learned how to negate quantified statements.
 In this module, we study nested quantifiers and see how the order of quantifiers affects meaning.
 """)
 
-st.subheader("Nested Quantifiers")
-
 st.markdown("""
 A nested quantifier occurs when a quantified statement contains more than one quantifier.
-""")
-
-col1, col2 = st.columns(2)
-
-with col1:
-
-    st.markdown("""
-∀x ∃y P(x,y)
-""")
-
-with col2:
-    st.markdown("""
-∃y ∀x P(x,y)
-""")
-
-st.info(""" Changing the order of quantifiers may change the meaning of a statement. """)
-
-st.info("""
-Quantifiers of the same type can be reordered without changing meaning.
-
-For example,
-
-∀x ∀y P(x,y) ≡ ∀y ∀x P(x,y)
-
-and
-
-∃x ∃y P(x,y) ≡ ∃y ∃x P(x,y)
 """)
 
 st.subheader("Example")
@@ -74,7 +45,7 @@ with col1:
     with col4:
         st.markdown("""
         ```text
-        {Alice, Bob, Carol}
+        {Alice, Bob, Charlie}
         ```
         """)
 
@@ -88,7 +59,7 @@ with col1:
     with col4:
         st.markdown("""
         ```text
-        {CSC375, CSC384}
+        {CSC 379, MTH 328}
         ```
         """)
 
@@ -98,8 +69,8 @@ with col2:
     """)
 
     enrolled_df = pd.DataFrame( { 
-        "Student": [ "Alice", "Alice", "Bob", "Carol" ], 
-        "Course": [ "CSC375", "CSC384", "CSC375", "CSC384" ] } )
+        "Student": [ "Alice", "Alice", "Bob", "Charlie" ], 
+        "Course": [ "CSC 379", "MTH 328", "CSC 379", "MTH 328" ] } )
 
     st.markdown("""**Enrolled**""")
     st.dataframe( enrolled_df, hide_index=True, width="content" )
@@ -159,6 +130,43 @@ with col2:
 
 st.warning(""" These two statements are not equivalent. """)
 
+st.subheader("Common Nested Quantified Statements")
+
+nested_df = pd.DataFrame(
+    {
+        "Quantified Statement": [
+            "∀student ∀course Enrolled(student, course)",
+            "∃student ∃course Enrolled(student, course)",
+            "∀student ∃course Enrolled(student, course)",
+            "∃course ∀student Enrolled(student, course)",
+            "∀course ∃student Enrolled(student, course)",
+            "∃student ∀course Enrolled(student, course)",
+        ],
+        "Meaning": [
+            "Every student is enrolled in every course.",
+            "There exists a student enrolled in a course.",
+            "Every student is enrolled in at least one course.",
+            "There exists a course in which every student is enrolled.",
+            "Every course has at least one enrolled student.",
+            "There exists a student enrolled in every course.",
+        ],
+        "Quantifier Order": [
+            "Can be swapped. Equivalent to ∀course ∀student ...",
+            "Can be swapped. Equivalent to ∃course ∃student ...",
+            "May change meaning. May not be equivalent to ∃course ∀student ...",
+            "May change meaning. May not be equivalent to ∀student ∃course ...",
+            "May change meaning. May not be equivalent to ∃student ∀course ...",
+            "May change meaning. May not be equivalent to ∀course ∃student ...",
+        ],
+    }
+)
+
+st.dataframe(
+    nested_df,
+    hide_index=True,
+    width="stretch",
+)
+
 st.subheader("Explore Nested Quantifiers")
 
 st.markdown("""
@@ -172,28 +180,28 @@ Enrolled(student, course)
 col1, col2, col3 = st.columns(3) 
 
 with col1: 
-    alice_375 = st.checkbox( "Enrolled(Alice, CSC375)", value=True ) 
-    alice_384 = st.checkbox( "Enrolled(Alice, CSC384)", value=True ) 
+    alice_379 = st.checkbox( "Enrolled(Alice, CSC 379)", value=True ) 
+    alice_328 = st.checkbox( "Enrolled(Alice, MTH 328)", value=True ) 
 
 with col2:
-    bob_375 = st.checkbox( "Enrolled(Bob, CSC375)", value=True ) 
-    bob_384 = st.checkbox( "Enrolled(Bob, CSC384)", value=False ) 
+    bob_379 = st.checkbox( "Enrolled(Bob, CSC 379)", value=True ) 
+    bob_328 = st.checkbox( "Enrolled(Bob, MTH 328)", value=False ) 
 
 with col3: 
-    carol_375 = st.checkbox( "Enrolled(Carol, CSC375)", value=False ) 
-    carol_384 = st.checkbox( "Enrolled(Carol, CSC384)", value=True )
+    charlie_379 = st.checkbox( "Enrolled(Charlie, CSC 379)", value=False ) 
+    charlie_328 = st.checkbox( "Enrolled(Charlie, MTH 328)", value=True )
 
 enrolled = {
-    ("Alice", "CSC375"): alice_375,
-    ("Alice", "CSC384"): alice_384,
-    ("Bob", "CSC375"): bob_375,
-    ("Bob", "CSC384"): bob_384,
-    ("Carol", "CSC375"): carol_375,
-    ("Carol", "CSC384"): carol_384,
+    ("Alice", "CSC 379"): alice_379,
+    ("Alice", "MTH 328"): alice_328,
+    ("Bob", "CSC 379"): bob_379,
+    ("Bob", "MTH 328"): bob_328,
+    ("Charlie", "CSC 379"): charlie_379,
+    ("Charlie", "MTH 328"): charlie_328,
 }
 
-students = ["Alice", "Bob", "Carol"]
-courses = ["CSC375", "CSC384"]
+students = ["Alice", "Bob", "Charlie"]
+courses = ["CSC 379", "MTH 328"]
 
 forall_exists = all(
     any(
@@ -253,7 +261,37 @@ results_df2 = pd.DataFrame(
     }
 )
 
-col1, col2 = st.columns(2)
+forall_forall = all(
+    all(
+        enrolled[(student, course)]
+        for student in students
+    )
+    for course in courses
+)
+
+exists_exists = any(
+    any(
+        enrolled[(student, course)]
+        for course in courses
+    )
+    for student in students
+)
+
+results_df3 = pd.DataFrame(
+    {
+        "Statement": [
+            "∀course ∀student Enrolled(student, course)",
+            "∃student ∃course Enrolled(student, course)",
+        ],
+        "Truth Value": [
+            "T" if forall_forall else "F",
+            "T" if exists_exists else "F",
+        ],
+    }
+)
+
+
+col1, col2, col3 = st.columns(3)
 
 with col1:
     st.dataframe(
@@ -269,11 +307,19 @@ with col2:
         width="stretch",
     )
 
+with col3:
+    st.dataframe(
+        results_df3,
+        hide_index=True,
+        width="stretch",
+    )
 
 st.info("""
 Experiment with the rows.
 
-Notice that changing the order of the quantifiers can change the truth value of the statement.
+Notice that when different quantifiers are nested,
+changing the order of the quantifiers can change
+the meaning and truth value of a statement.
 """)
 
 st.subheader("Summary")

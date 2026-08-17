@@ -98,7 +98,7 @@ st.markdown("---")
 ## Database Connection
 st.subheader("Database Connection") 
 students_df = pd.DataFrame( 
-    { "Student": ["Alice", "Bob", "Carol"], 
+    { "Student": ["Alice", "Bob", "Charlie"], 
      "GPA": ["3.9", "2.4", "3.7"] } ) 
 
 col1, col2 = st.columns([1,2])
@@ -144,7 +144,7 @@ st.markdown("---")
 st.subheader("Predicates with Multiple Variables") 
 enrolled_df = pd.DataFrame( 
     { "Student": ["Alice", "Bob"], 
-     "Course": ["CSC375", "CSC384"] } ) 
+     "Course": ["CSC 379", "MTH 328"] } ) 
 
 col1, col2 = st.columns([1,2])
 
@@ -171,7 +171,7 @@ with col1:
 with col2:
     st.markdown("""
     ```text
-    Enrolled(Alice, CSC375)
+    Enrolled(Alice, CSC 379)
     ```
 
     is True because the row appears in the table.
@@ -179,7 +179,7 @@ with col2:
     Similarly,
 
     ```text
-    Enrolled(Bob, CSC384)
+    Enrolled(Bob, MTH 328)
     ```
 
     is True. 
@@ -187,7 +187,7 @@ with col2:
     However, 
 
     ```text
-    Enrolled(Alice, CSC384)
+    Enrolled(Alice, MTH 328)
     ```
 
     is False. 

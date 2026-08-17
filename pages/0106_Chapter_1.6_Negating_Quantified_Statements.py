@@ -129,7 +129,7 @@ col1, col2, col3 = st.columns([3,4,4])
 with col1:
     st.markdown("""
 ```text
-Domain: {Alice, Bob, Carol}
+Domain: {Alice, Bob, Charlie}
 ```
     """)
     st.markdown("Choose who all submitted the assignment")
@@ -141,11 +141,11 @@ Domain: {Alice, Bob, Carol}
         "Bob submitted",
         value=True
     )
-    carol = st.checkbox(
-        "Carol submitted",
+    charlie = st.checkbox(
+        "Charlie submitted",
         value=False
     )
-    values = [alice, bob, carol]
+    values = [alice, bob, charlie]
 
 with col2:   
     forall_p = all(values)
@@ -174,7 +174,8 @@ with col2:
         width="content"
     )
     st.info("""
-    Notice that ¬∀x P(x) and ∃x ¬P(x) always have the same truth value.
+    Notice that for the examples explored here,\n\n
+    ¬∀x P(x) and ∃x ¬P(x) have the same truth value.
     """)
 
 with col3:
@@ -198,7 +199,8 @@ with col3:
     st.markdown("**Existential Negation**")
     st.dataframe( results_df, hide_index=True, width="content" )
     st.info("""
-    Notice that ¬∃x P(x) and ∀x ¬P(x) always have the same truth value.
+    Notice that for the examples explored here,\n
+    ¬∃x P(x) and ∀x ¬P(x) have the same truth value.
     """)
 
 st.subheader("Summary of Quantifier Negation")
@@ -221,3 +223,29 @@ st.dataframe(
     hide_index=True,
     width="content"
 )
+
+with st.expander("Connection to DeMorgan's Laws"):
+
+    st.markdown("""
+For propositions, DeMorgan's Laws state
+
+```text
+¬(p ∧ q) ≡ ¬p ∨ ¬q
+¬(p ∨ q) ≡ ¬p ∧ ¬q
+```
+
+For quantified statements, similar laws hold:
+
+```text
+¬∀x P(x) ≡ ∃x ¬P(x)
+¬∃x P(x) ≡ ∀x ¬P(x)
+```
+
+In both cases, negation moves inward and the operator changes:
+
+```text
+∧ ↔ ∨
+∀ ↔ ∃
+```
+
+""")
