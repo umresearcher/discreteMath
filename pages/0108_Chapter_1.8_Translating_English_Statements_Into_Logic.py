@@ -71,17 +71,6 @@ st.dataframe(
 
 st.subheader("Examples with Predicates")
 
-st.markdown("""
-Assume the following predicates:
-
-```text
-Submitted(student) is True when the student submitted the assignment.
-Enrolled(student, course) is True when the student is enrolled in the course. 
-```
-""")
-
-st.subheader("Examples with Predicates")
-
 examples_df = pd.DataFrame(
     {
         "English Statement": [
@@ -105,11 +94,28 @@ examples_df = pd.DataFrame(
     }
 )
 
-st.dataframe(
-    examples_df,
-    hide_index=True,
-    width="stretch",
-)
+col1, col2 = st.columns([2,5])
+
+with col1:
+    st.markdown("")
+    st.markdown("""
+    Assume the following predicate definitions:
+
+    ```text
+    Submitted(student) is True when
+    the student submitted the assignment.
+    
+    Enrolled(student, course) is True when
+    the student is enrolled in the course. 
+    ```
+    """)
+
+with col2:
+    st.dataframe(
+        examples_df,
+        hide_index=True,
+        width="stretch",
+    )
 
 translations = {
 
@@ -138,77 +144,87 @@ translations = {
         "∀course ∃student Enrolled(student, course)",
 }
 
-st.subheader("English to Logic")
-
-statement = st.selectbox(
-    "Choose an English statement",
-    list(translations.keys())
-)
-
-st.markdown("**Logical Form**")
-
-st.code(
-    translations[statement],
-    language="text"
-)
-
 reverse_translations = {
     v: k
     for k, v in translations.items()
 }
 
-st.subheader("Logic to English")
+col1, col2 = st.columns(2)
 
-logical_form = st.selectbox(
-    "Choose a logical statement",
-    list(reverse_translations.keys())
-)
+with col1:
+    st.subheader("English to Logic")
 
-st.markdown("**English Translation**")
+    statement = st.selectbox(
+        "Choose an English statement",
+        list(translations.keys())
+    )
 
-st.code(
-    reverse_translations[logical_form],
-    language="text"
-)
+    st.markdown("**Logical Form**")
 
-st.subheader("Common Translation Pitfalls")
+    st.code(
+        translations[statement],
+        language="text"
+    )
 
-pitfalls_df = pd.DataFrame(
-    {
-        "English Statement": [
-            "No student submitted the assignment.",
-            "Not every student submitted the assignment.",
-            "There exists a student who did not submit the assignment.",
-        ],
-        "Logical Form": [
-            "¬∃student Submitted(student)",
-            "¬∀student Submitted(student)",
-            "∃student ¬Submitted(student)",
-        ],
-    }
-)
+with col2:
+    st.subheader("Logic to English")
 
-st.dataframe(
-    pitfalls_df,
-    hide_index=True,
-    width="stretch",
-)
+    logical_form = st.selectbox(
+        "Choose a logical statement",
+        list(reverse_translations.keys())
+    )
 
-st.info("""
-These statements have different meanings.
+    st.markdown("**English Translation**")
 
-"No student ..." means that nobody satisfies the predicate.
+    st.code(
+        reverse_translations[logical_form],
+        language="text"
+    )
 
-"Not every ..." means that at least one element does not satisfy the predicate.
+col1, col2 = st.columns([5,2])
 
-"There exists ... who did not ..." means there is a specific counterexample.
-""")
+with col1:
+    st.subheader("Common Translation Pitfalls")
 
-st.subheader("Quick Translation Reference")
+    pitfalls_df = pd.DataFrame(
+        {
+            "English Statement": [
+                "No student submitted the assignment.",
+                "Not every student submitted the assignment.",
+                "There exists a student who did not submit the assignment.",
+            ],
+            "Logical Form": [
+                "¬∃student Submitted(student)",
+                "¬∀student Submitted(student)",
+                "∃student ¬Submitted(student)",
+            ],
+        }
+    )
 
-translation_df = pd.DataFrame( { 
-    "English Phrase": [ "Every", "For all", "There exists", "Some", "At least one", "No", ], 
-    "Logical Symbol": [ "∀", "∀", "∃", "∃", "∃", "¬∃", ], 
-    } ) 
+    st.dataframe(
+        pitfalls_df,
+        hide_index=True,
+        width="stretch",
+    )
 
-st.dataframe( translation_df, hide_index=True, width="content", )
+    st.info("""
+    These statements have different meanings.
+
+    "No student ..." means that nobody satisfies the predicate.
+
+    "Not every ..." means that at least one element does not satisfy the predicate.
+
+    "There exists ... who did not ..." means there is a specific counterexample.
+    """)
+
+with col2:
+    st.subheader("Quick Translation Reference")
+
+    translation_df = pd.DataFrame( { 
+        "English Phrase": [ "Every", "For all", "There exists", "Some", "At least one", "No", ], 
+        "Logical Symbol": [ "∀", "∀", "∃", "∃", "∃", "¬∃", ], 
+        } ) 
+
+    st.markdown("")
+    st.dataframe( translation_df, hide_index=True, width="content", )
+
