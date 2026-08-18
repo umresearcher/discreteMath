@@ -35,7 +35,7 @@ Key computing connections:
 - Predicates and databases
 - Quantifiers and database queries
 - Logic translation
-- Rules of inference and reasoning
+- Logical reasoning
 
 ---
 

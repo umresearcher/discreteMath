@@ -17,20 +17,6 @@ This chapter explores logic from several different perspectives:
 - Rules of Inference
 """)
 
-st.header("The Big Idea")
-
-st.info("""
-The same logical idea can be viewed in many different ways:
-
-English Statement
-↔ Logical Formula
-↔ Truth Table
-↔ Database Predicate
-↔ Program Condition
-
-Different representations make different questions easier to answer.
-""")
-
 st.success("""
 Suggested order:
 
