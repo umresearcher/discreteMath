@@ -6,7 +6,7 @@ st.title("Module 1: Propositions and Logical Operations")
 st.header("What Is a Proposition?")
 
 st.markdown("""
-A proposition is an expression whose value is either **True** or **False**.
+A proposition is a declarative sentence whose value is either **True** or **False**.
 
 The value of a proposition is called its **truth value**.
 """)
@@ -34,6 +34,30 @@ with col2:
 
 • x + 1
 """)
+
+with st.expander("Additional Note"):
+
+    st.markdown("""
+```text
+2 + 1 = 10
+```
+
+is a proposition because it has a truth value. In this case, the proposition is False.
+
+```text
+x + 1 = 10
+```
+
+is not a proposition because its truth value depends on the value of x. Instead, 
+
+```text
+x + 1 = 10
+```
+
+is a predicate.
+
+Module 5 introduces predicates and explains how a predicate becomes a proposition 
+when values are assigned to its variables. """)
 
 st.markdown("---")
 
@@ -116,7 +140,7 @@ Boolean expressions are often used in `if` statements.
 if raining:
     print("Take an umbrella!")
 
-if x > 10:
+if 9 > 10:
     print("Large value")
 ```
 

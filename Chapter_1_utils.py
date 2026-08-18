@@ -125,6 +125,37 @@ def generate_truth_table(expr_str):
 
     return pd.DataFrame(rows)
 
+def generate_truth_table_for_variables(expr_str, variables):
+
+    rows = []
+
+    for values in itertools.product(
+        [True, False],
+        repeat=len(variables)
+    ):
+
+        env = dict(zip(variables, values))
+
+        result = eval_logic(expr_str, env)
+
+        row = {}
+
+        for var in variables:
+            row[var] = "T" if env[var] else "F"
+
+        row["Result"] = (
+            "T" if result is True
+            else (
+                "F"
+                if result is False
+                else None
+            )
+        )
+
+        rows.append(row)
+
+    return pd.DataFrame(rows)
+
 def classify_expression(df):
     """
     Tautology / Contradiction / Contingency
