@@ -12,33 +12,53 @@ st.markdown("### Bridging Mathematics & Computer Science")
 st.info("👈 Please select a Chapter from the sidebar to begin.")
 
 st.markdown("""
-### Course Roadmap
 
-##### 🟢 **Chapter 6: Relations (Available Now)**
+#### Course Roadmap
 
-We have transformed textbook concepts into interactive modules:
+###### 🟢 **Chapter 1: Logic (Available Now)**
 
-1. **Binary Relations ↔ Tables**
-   - Define sets and relations.
-   - View relations as ordered pairs and tables.
+Interactive modules covering:
 
-2. **Binary Relations on the Same Set**
-   - Explore reflexivity, symmetry,
-     antisymmetry, and transitivity.
+- **Propositions and Logical Operators**
+- **Conditional Statements and Logical Equivalence**
+- **Truth Tables and Logical Analysis**
+- **Logical Equivalences and Laws**
+- **Predicates and Quantifiers**
+- **Negating Quantified Statements**
+- **Nested Quantifiers**
+- **Translating English Statements into Logic**
+- **Rules of Inference**
 
-3. **Binary Relations ↔ Directed Graphs**
-   - Visualize relations as digraphs.
+Key computing connections:
 
-4. **Binary Relations ↔ Matrices**
-   - Represent relations using adjacency matrices.
+- Program conditions and Boolean expressions
+- Predicates and databases
+- Quantifiers and database queries
+- Logic translation
+- Rules of inference and reasoning
 
-5. **Reachability & Transitive Closure**
-   - Paths, matrix powers, and closure.
+---
 
-6. **N-ary Relations ↔ Database Tables**
-   - Connect mathematical relations to SQL tables.
-   
-#### 🚧 **Chapter 1: Logic (Coming Soon)**
-* Logic Gates & Circuits.
-* Truth Tables as Data Validation.
+###### 🟢 **Chapter 6: Relations (Available Now)**
+
+Interactive modules covering:
+
+- **Binary Relations ↔ Tables**
+- **Relations on the Same Set**
+- **Relations as Directed Graphs**
+- **Relations as Matrices**
+- **Reachability and Transitive Closure**
+- **Equivalence Relations and Equivalence Classes**
+- **Partial Orders and Hasse Diagrams**
+- **N-ary Relations, SQL, and Datalog**
+
+Key computing connections:
+
+- Graphs and networks
+- Database tables
+- Reachability queries
+- SQL and Datalog
+- Data modeling
+
 """)
+
